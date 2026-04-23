@@ -3,10 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tabuada da Bruxinha - Edição Final</title>
+    <title>Tabuada da Bruxinha - EdHumanas</title>
     <style>
-        :root { --hw-orange: #ff9900; --hw-purple: #2e0249; --neon-green: #39ff14; }
+        :root { 
+            --hw-orange: #ff9900; 
+            --hw-purple: #2e0249; 
+            --neon-green: #39ff14; 
+            --bg-color-1: #050511;
+            --bg-color-2: #2a0a46;
+            --bg-color-3: #0f2e0f;
+        }
         
+        /* MODO NOTURNO */
+        body.dark-mode {
+            --hw-orange: #b36b00;
+            --neon-green: #25a10d;
+            --bg-color-1: #020205;
+            --bg-color-2: #150523;
+            --bg-color-3: #071707;
+            color: #ccc;
+        }
+
         body { 
             margin: 0; padding: 0;
             font-family: 'Segoe UI', Tahoma, sans-serif; 
@@ -19,8 +36,9 @@
         
         #game-wrapper { 
             width: 100%; height: 100%; position: relative; 
-            background: linear-gradient(to bottom, #050511 0%, #2a0a46 60%, #0f2e0f 100%);
+            background: linear-gradient(to bottom, var(--bg-color-1) 0%, var(--bg-color-2) 60%, var(--bg-color-3) 100%);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: background 0.3s;
         }
 
         .screen {
@@ -30,15 +48,19 @@
             z-index: 10; transition: opacity 0.3s;
         }
 
-        /* BOTÃO DE ÁUDIO */
-        .audio-btn {
+        /* BOTÕES SUPERIORES */
+        .top-bar {
             position: absolute; top: 20px; left: 20px; z-index: 100;
+            display: flex; gap: 15px;
+        }
+        
+        .icon-btn {
             background: rgba(0, 0, 0, 0.6); border: 2px solid var(--hw-orange); color: white;
             width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
             font-size: 24px; display: flex; justify-content: center; align-items: center;
             transition: transform 0.2s, background 0.2s; user-select: none;
         }
-        .audio-btn:hover { transform: scale(1.1); background: var(--hw-orange); color: black; }
+        .icon-btn:hover { transform: scale(1.1); background: var(--hw-orange); color: black; }
 
         /* MENU */
         #menu h2 { font-size: 4vh; color: var(--hw-orange); text-shadow: 0 0 10px var(--hw-orange); margin-bottom: 2vh; text-align: center;}
@@ -54,19 +76,39 @@
 
         /* JOGO */
         #game-container { display: none; }
-        #ui { position: absolute; top: 15%; width: 100%; text-align: center; z-index: 20; pointer-events: none; }
+        #ui { position: absolute; top: 10%; width: 100%; text-align: center; z-index: 20; pointer-events: none; }
         #question { font-size: 8vh; font-weight: bold; color: var(--hw-orange); text-shadow: 4px 4px #000; margin: 0; }
-        #answer-input { 
-            font-size: 5vh; width: 25vw; max-width: 200px; text-align: center; border-radius: 15px; 
-            border: 4px solid var(--hw-orange); pointer-events: auto; padding: 1vh;
-            background: rgba(0,0,0,0.8); color: white; outline: none; margin-top: 1vh;
+        
+        /* NOVO DISPLAY DE RESPOSTA (Substitui o Input) */
+        .answer-box { 
+            font-size: 5vh; width: 25vw; max-width: 200px; height: 7vh; line-height: 7vh;
+            text-align: center; border-radius: 15px; border: 4px solid var(--hw-orange); 
+            background: rgba(0,0,0,0.8); color: white; margin: 1vh auto;
+            pointer-events: none; user-select: none;
         }
+        
         #feedback { font-size: 4vh; font-weight: bold; height: 5vh; margin-top: 2vh; text-shadow: 2px 2px #000; color: #ffff00; }
         .stats { position: absolute; top: 20px; right: 20px; font-size: 3vh; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; }
 
+        /* TECLADO NUMÉRICO TRANSLÚCIDO */
+        #numpad {
+            position: absolute; bottom: 5%; right: 5%;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            background: rgba(46, 2, 73, 0.6); padding: 15px; border-radius: 15px;
+            border: 2px solid rgba(255,153,0,0.5); backdrop-filter: blur(8px); z-index: 30;
+        }
+        .num-key {
+            background: rgba(0,0,0,0.7); color: white; border: 2px solid var(--hw-orange);
+            width: 8vh; height: 8vh; font-size: 3vh; border-radius: 10px; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none; font-weight: bold; transition: background 0.1s;
+        }
+        .num-key:active { background: var(--hw-orange); color: black; transform: scale(0.95); }
+        .num-key.enter { background: var(--neon-green); color: black; border-color: white; }
+
         #witch { 
             position: absolute; 
-            width: 22vh; /* Tamanho ajustado (maior) */
+            width: 22vh; 
             bottom: 50%; left: 10%; 
             transition: bottom 0.5s ease-out; 
             z-index: 10; filter: drop-shadow(4px 4px 8px black);
@@ -79,7 +121,6 @@
         .ranking-table th { border-bottom: 2px solid var(--hw-orange); color: var(--hw-orange); padding: 5px; }
         .ranking-table td { padding: 8px; border-bottom: 1px solid #444; }
         .rank-pos { color: var(--hw-orange); font-weight: bold; }
-        .rank-title { font-style: italic; color: #aaa; font-size: 0.8em; }
         .rank-score { color: var(--neon-green); text-align: right; font-weight: bold; }
         .rank-time { color: #aaa; text-align: right; font-size: 0.8em; }
         
@@ -97,7 +138,7 @@
         .btn:hover { background: #ffaa33; transform: scale(1.05); }
         .btn:active { transform: scale(0.95); }
         
-        select, .radio-group { font-size: 2.5vh; padding: 10px; margin: 10px; border-radius: 10px; }
+        select, .radio-group { font-size: 2.5vh; padding: 10px; margin: 10px; border-radius: 10px; background: white; color: black; }
 
         @keyframes neonPulse {
             0% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-green); }
@@ -109,17 +150,21 @@
 <body>
 
 <div id="game-wrapper">
-    <div id="btn-audio" class="audio-btn" onclick="toggleAudio()">🔊</div>
+    <div class="top-bar">
+        <div id="btn-audio" class="icon-btn" onclick="toggleAudio()" title="Áudio">🔊</div>
+        <div id="btn-full" class="icon-btn" onclick="toggleFullscreen()" title="Tela Cheia">⛶</div>
+        <div id="btn-night" class="icon-btn" onclick="toggleNightMode()" title="Modo Noturno">🌙</div>
+    </div>
 
     <div id="menu" class="screen">
         <div class="menu-box">
-            <h2>🎃 Tabuada da Bruxinha 🎃</h2>
-            <p>Edição Animada</p>
+            <h2>🎃 EdHumanas 🎃</h2>
+            <p>Tabuada da Bruxinha</p>
             <select id="tabuada-select">
                 <option value="mista1">Mista Fácil (x2 pontos)</option>
                 <option value="mista2">Mista Difícil (x8 pontos)</option>
             </select>
-            <div class="radio-group" style="color: white;">
+            <div class="radio-group">
                 <label><input type="radio" name="ordem" value="seq" checked> Sequencial</label>
                 <label><input type="radio" name="ordem" value="rand"> Aleatória</label>
             </div>
@@ -133,9 +178,25 @@
         <div class="stats">Acertos: <span id="score">0</span></div>
         <div id="ui">
             <div id="question">--</div>
-            <input type="number" id="answer-input" inputmode="numeric" pattern="[0-9]*" placeholder="?">
+            <div id="answer-display" class="answer-box">?</div>
             <div id="feedback"></div>
         </div>
+
+        <div id="numpad">
+            <div class="num-key" onclick="handleNumpad('7')">7</div>
+            <div class="num-key" onclick="handleNumpad('8')">8</div>
+            <div class="num-key" onclick="handleNumpad('9')">9</div>
+            <div class="num-key" onclick="handleNumpad('4')">4</div>
+            <div class="num-key" onclick="handleNumpad('5')">5</div>
+            <div class="num-key" onclick="handleNumpad('6')">6</div>
+            <div class="num-key" onclick="handleNumpad('1')">1</div>
+            <div class="num-key" onclick="handleNumpad('2')">2</div>
+            <div class="num-key" onclick="handleNumpad('3')">3</div>
+            <div class="num-key" onclick="handleNumpad('0')">0</div>
+            <div class="num-key" onclick="handleNumpad('DEL')">←</div>
+            <div class="num-key enter" onclick="handleNumpad('ENTER')">OK</div>
+        </div>
+
         <img id="witch" src="bruxinha.gif" alt="Bruxinha">
     </div>
 
@@ -146,7 +207,7 @@
             
             <div id="highscore-area" style="display:none;">
                 <div class="new-record">✨ REGISTRAR PONTOS ✨</div>
-                <p style="font-size: 1.8vh; color: #ccc;">Use o mesmo nome para somar pontos!</p>
+                <p style="font-size: 1.8vh; color: #ccc;">Use o teclado do seu dispositivo para digitar o nome</p>
                 <input type="text" id="player-name" class="high-score-input" maxlength="12" placeholder="SEU NOME">
                 <br>
                 <button class="btn" onclick="saveScore()">SALVAR & VER RANKING</button>
@@ -168,37 +229,40 @@
 </div>
 
 <script>
+    // --- CONTROLES DE INTERFACE (TELA CHEIA E NOTURNO) ---
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log(`Erro ao tentar tela cheia: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    function toggleNightMode() {
+        document.body.classList.toggle('dark-mode');
+    }
+
     // --- CONFIGURAÇÕES DO JOGO ---
     const VELOCIDADE_HORIZONTAL = 0.45; 
-    const FORCA_GRAVIDADE = 0.09; // Gravidade suave       
+    const FORCA_GRAVIDADE = 0.09;       
     const IMPULSO_ACERTO = 10;
     const NUMERO_QUESTOES = 15; 
 
     // --- IMAGENS (GIFS LOCAIS) ---
     const FLYING_GIFS = ["bruxinha.gif", "bruxinha2.gif", "bruxinha3.gif", "bruxinha4.gif"];
-    const IMG_BRAVA = "bruxinha-brava.gif"; // Novo GIF
+    const IMG_BRAVA = "bruxinha-brava.gif"; 
     const IMG_CAIDA = "bruxinha-caindo.gif";
 
     // --- CONTROLE DE ÁUDIO ---
     let audioEnabled = true;
-
-    // --- SONS LOCAIS ---
-    const bgMusic = new Audio('musica.mp3'); 
-    bgMusic.loop = true; bgMusic.volume = 0.5;
-
+    const bgMusic = new Audio('musica.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
     const sfxCrash = new Audio('crash.mp3'); 
     const sfxWin = new Audio('vitoria.mp3'); 
     const sfxLose = new Audio('derrota.mp3'); 
-
-    const audiosAcerto = [
-        { t: "Beleza!", u: "beleza.mp3" }, { t: "Muito bem!", u: "muitobem.mp3" },
-        { t: "Muito bom!", u: "muitobom.mp3" }, { t: "Ótimo!", u: "otimo.mp3" },
-        { t: "Sensacional!", u: "sensacional.mp3" }, { t: "Continue praticando!", u: "praticando.mp3" }
-    ];
-    const audiosErro = [
-        { t: "Continue tentando!", u: "tente.mp3" }, { t: "Não foi desta vez!", u: "naofoi.mp3" },
-        { t: "Que pena!", u: "quepena.mp3" }
-    ];
+    const audiosAcerto = [{ t: "Beleza!", u: "beleza.mp3" }, { t: "Muito bem!", u: "muitobem.mp3" }];
+    const audiosErro = [{ t: "Continue tentando!", u: "tente.mp3" }, { t: "Não foi desta vez!", u: "naofoi.mp3" }];
 
     function toggleAudio() {
         audioEnabled = !audioEnabled;
@@ -250,41 +314,14 @@
         if (existingPlayer) {
             existingPlayer.score += roundScore;
             existingPlayer.time += pendingTime;
-            existingPlayer.date = new Date().toLocaleDateString();
         } else {
-            ranking.push({ 
-                name: name, score: roundScore, time: pendingTime, date: new Date().toLocaleDateString()
-            });
+            ranking.push({ name: name, score: roundScore, time: pendingTime });
         }
 
-        ranking.sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            return a.time - b.time;
-        });
-
+        ranking.sort((a, b) => b.score !== a.score ? b.score - a.score : a.time - b.time);
         if (ranking.length > 15) ranking = ranking.slice(0, 15);
         try { localStorage.setItem('bruxinha_ranking_v2', JSON.stringify(ranking)); } catch(e){}
-        showRankingDisplay();
-    }
-
-    function formatTime(seconds) {
-        let m = Math.floor(seconds / 60);
-        let s = Math.floor(seconds % 60);
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-
-    function renderRankingTable() {
-        let ranking = getRanking();
-        let tbody = document.getElementById('ranking-table-body');
-        tbody.innerHTML = `<tr><th>#</th><th>JOGADOR</th><th>PTS</th><th>TEMPO</th></tr>`;
-        for(let i=0; i<ranking.length; i++) {
-            let entry = ranking[i];
-            tbody.innerHTML += `<tr><td class="rank-pos">${i+1}</td><td>${entry.name}</td><td class="rank-score">${entry.score}</td><td class="rank-time">${formatTime(entry.time)}</td></tr>`;
-        }
-        if(ranking.length === 0) tbody.innerHTML = `<tr><td colspan="4">Nenhum recorde ainda. Seja o primeiro!</td></tr>`;
-    }
-
-    function showRankingDisplay() {
+        
         document.getElementById('highscore-area').style.display = 'none';
         document.getElementById('stats-area').style.display = 'none';
         document.getElementById('modal-title').style.display = 'none';
@@ -293,60 +330,57 @@
         renderRankingTable();
     }
 
-    function showRankingOnly() {
-        document.getElementById('menu').style.display = 'none';
-        document.getElementById('modal-overlay').style.display = 'flex';
-        showRankingDisplay();
+    function renderRankingTable() {
+        let ranking = getRanking();
+        let tbody = document.getElementById('ranking-table-body');
+        tbody.innerHTML = `<tr><th>#</th><th>JOGADOR</th><th>PTS</th></tr>`;
+        for(let i=0; i<ranking.length; i++) {
+            tbody.innerHTML += `<tr><td class="rank-pos">${i+1}</td><td>${ranking[i].name}</td><td class="rank-score">${ranking[i].score}</td></tr>`;
+        }
+        if(ranking.length === 0) tbody.innerHTML = `<tr><td colspan="3">Nenhum recorde ainda!</td></tr>`;
+    }
+
+    function formatTime(seconds) {
+        let m = Math.floor(seconds / 60);
+        let s = Math.floor(seconds % 60);
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
     // --- LÓGICA DO JOGO ---
     let questions = [], currentIndex = 0, score = 0, witchY = 60, currentQ;
     let witchX = 10, witchDirection = 1;
-    let flightInterval;
-    let spriteInterval; 
-    let totalQuestionsCount = 0;
-    let isGameOver = false;
+    let flightInterval, spriteInterval, isGameOver = false;
+    let isAngry = false, angryTimer;
+    let pendingRawScore = 0, pendingMultiplier = 1, pendingTime = 0, startTime = 0;
     
-    // Variáveis de Controle de Estado
-    let isAngry = false;
-    let angryTimer;
-
-    let pendingRawScore = 0; 
-    let pendingMultiplier = 1; 
-    let pendingTime = 0; 
-    let startTime = 0;
+    // Variável para armazenar a resposta digitada sem o input HTML nativo
+    let currentAnswer = ""; 
 
     window.onload = function() {
         const select = document.getElementById('tabuada-select');
         for(let i=0; i<=12; i++) {
             let opt = document.createElement('option');
             opt.value = i;
-            let txt = i === 0 ? " (x0.5 pts)" : ` (x${i} pts)`;
-            opt.innerHTML = `Tabuada do ${i}` + txt;
+            opt.innerHTML = `Tabuada do ${i}` + (i === 0 ? " (x0.5 pts)" : ` (x${i} pts)`);
             select.appendChild(opt);
         }
         document.getElementById('btn-start').onclick = startGame;
-        document.getElementById('btn-ranking').onclick = showRankingOnly;
+        document.getElementById('btn-ranking').onclick = () => {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('highscore-area').style.display = 'none';
+            document.getElementById('stats-area').style.display = 'none';
+            document.getElementById('modal-title').style.display = 'none';
+            document.getElementById('modal-msg').style.display = 'none';
+            document.getElementById('ranking-display').style.display = 'block';
+            renderRankingTable();
+        };
     };
 
-    function updateWitchSprite() {
-        // Se o jogo acabou ou ela está brava, não troca para GIF feliz aleatório
-        if(isGameOver || isAngry) return;
-        const randomGif = FLYING_GIFS[Math.floor(Math.random() * FLYING_GIFS.length)];
-        document.getElementById('witch').src = randomGif;
-    }
-
     function startGame() {
-        if(audioEnabled) {
-            bgMusic.currentTime = 0;
-            playAudio(bgMusic);
-        }
-
-        isGameOver = false;
-        isAngry = false;
-        clearTimeout(angryTimer); // Limpa qualquer timer antigo
-
-        // Inicia com o primeiro GIF local
+        if(audioEnabled) { bgMusic.currentTime = 0; playAudio(bgMusic); }
+        isGameOver = false; isAngry = false; clearTimeout(angryTimer);
+        
         document.getElementById('witch').src = FLYING_GIFS[0];
         document.getElementById('witch').style.transform = "scaleX(1)";
         document.getElementById('menu').style.display = 'none';
@@ -372,8 +406,7 @@
         if(base.length > NUMERO_QUESTOES) base = base.slice(0, NUMERO_QUESTOES);
         if(mode === 'rand') base = base.sort(()=>Math.random()-0.5);
         
-        questions = base; totalQuestionsCount = questions.length; currentIndex = 0;
-        
+        questions = base; currentIndex = 0;
         startTime = Date.now(); 
         startMechanics();
         showQuestion();
@@ -383,9 +416,62 @@
         if(currentIndex >= questions.length) { handleGameOver(true); return; }
         currentQ = questions[currentIndex];
         document.getElementById('question').innerText = `${currentQ.n1} x ${currentQ.n2}`;
-        let inp = document.getElementById('answer-input');
-        inp.value = ''; inp.focus();
+        
+        // Limpa o painel digital para a nova pergunta
+        currentAnswer = "";
+        document.getElementById('answer-display').innerText = "?";
         document.getElementById('feedback').innerText = '';
+    }
+
+    // --- CONTROLE DE ENTRADA (FÍSICO E TOUCH) ---
+    function handleNumpad(val) {
+        if (isGameOver || document.getElementById('feedback').innerText !== '') return;
+
+        if (val === 'DEL') {
+            currentAnswer = currentAnswer.slice(0, -1);
+        } else if (val === 'ENTER') {
+            checkAnswer();
+        } else {
+            if (currentAnswer.length < 4) currentAnswer += val;
+        }
+        
+        document.getElementById('answer-display').innerText = currentAnswer || '?';
+    }
+
+    document.addEventListener('keydown', (e) => {
+        // Se o jogo está ativo e sem modal na frente, captura os números físicos
+        if(document.getElementById('game-container').style.display === 'flex' && !isGameOver) {
+            if (e.key >= '0' && e.key <= '9') handleNumpad(e.key);
+            if (e.key === 'Backspace') handleNumpad('DEL');
+            if (e.key === 'Enter') handleNumpad('ENTER');
+        }
+    });
+
+    function checkAnswer() {
+        if (currentAnswer === "") return;
+        
+        let userAns = parseInt(currentAnswer);
+        let correct = currentQ.n1 * currentQ.n2;
+        let fb = document.getElementById('feedback');
+        
+        if(userAns === correct) {
+            score++; document.getElementById('score').innerText = score;
+            fb.innerText = darFeedback('acerto'); fb.style.color = "#39ff14";
+            witchY = Math.min(witchY + IMPULSO_ACERTO, 80);
+        } else {
+            fb.innerText = darFeedback('erro'); fb.style.color = "#ff4444";
+            witchY -= 5; questions.push({...currentQ});
+            isAngry = true;
+            document.getElementById('witch').src = IMG_BRAVA;
+            clearTimeout(angryTimer); 
+            angryTimer = setTimeout(() => {
+                isAngry = false;
+                if(!isGameOver) document.getElementById('witch').src = FLYING_GIFS[0];
+            }, 3000);
+        }
+        
+        currentIndex++; 
+        setTimeout(showQuestion, 1500);
     }
 
     function startMechanics() {
@@ -398,115 +484,51 @@
             if (witchX >= 85) { witchDirection = -1; document.getElementById('witch').style.transform = "scaleX(-1)"; }
             else if (witchX <= 5) { witchDirection = 1; document.getElementById('witch').style.transform = "scaleX(1)"; }
             witchY -= FORCA_GRAVIDADE;
-            updateVisuals();
+            
+            const witch = document.getElementById('witch');
+            witch.style.left = witchX + '%';
+            witch.style.bottom = witchY + '%';
+            if(witchY < 5 && !isGameOver) handleCrash();
         }, 50);
 
-        // Troca de GIFs a cada 3 segundos
-        spriteInterval = setInterval(updateWitchSprite, 3000);
-    }
-
-    function updateVisuals() {
-        const witch = document.getElementById('witch');
-        witch.style.left = witchX + '%';
-        witch.style.bottom = witchY + '%';
-        if(witchY < 5 && !isGameOver) handleCrash();
+        spriteInterval = setInterval(() => {
+            if(isGameOver || isAngry) return;
+            document.getElementById('witch').src = FLYING_GIFS[Math.floor(Math.random() * FLYING_GIFS.length)];
+        }, 3000);
     }
 
     function handleCrash() {
-        isGameOver = true; 
-        clearInterval(flightInterval); 
-        clearInterval(spriteInterval); 
-        clearTimeout(angryTimer); // Garante que a cara de brava não substitua a queda
-        bgMusic.pause();
-        
-        // GIF de queda tem prioridade
-        document.getElementById('witch').src = IMG_CAIDA;
-        
-        playAudio(sfxCrash);
-        document.getElementById('feedback').innerText = "Oh-ouh!";
-        document.getElementById('feedback').style.color = "red";
+        isGameOver = true; clearInterval(flightInterval); clearInterval(spriteInterval); clearTimeout(angryTimer);
+        bgMusic.pause(); document.getElementById('witch').src = IMG_CAIDA; playAudio(sfxCrash);
+        document.getElementById('feedback').innerText = "Oh-ouh!"; document.getElementById('feedback').style.color = "red";
         setTimeout(() => { handleGameOver(false); }, 2500);
     }
 
-    document.getElementById('answer-input').addEventListener('keyup', (e) => {
-        if(e.key === 'Enter' && !isGameOver) {
-            let userAns = parseInt(e.target.value);
-            let correct = currentQ.n1 * currentQ.n2;
-            let fb = document.getElementById('feedback');
-            
-            if(userAns === correct) {
-                // ACERTO
-                score++; document.getElementById('score').innerText = score;
-                fb.innerText = darFeedback('acerto'); fb.style.color = "#39ff14";
-                witchY = Math.min(witchY + IMPULSO_ACERTO, 80);
-                currentIndex++; setTimeout(showQuestion, 1500);
-            } else {
-                // ERRO - ATIVAR MODO BRAVA
-                fb.innerText = darFeedback('erro'); fb.style.color = "#ff4444";
-                witchY -= 5; questions.push({...currentQ});
-                
-                // Lógica do Gato Bravo
-                isAngry = true;
-                document.getElementById('witch').src = IMG_BRAVA; // Troca a imagem
-                
-                // Reinicia o timer de 3 segundos se errar de novo
-                clearTimeout(angryTimer); 
-                angryTimer = setTimeout(() => {
-                    isAngry = false; // Acabou a raiva
-                    if(!isGameOver) updateWitchSprite(); // Volta ao normal se não tiver caído
-                }, 3000);
-
-                currentIndex++; setTimeout(showQuestion, 1500);
-            }
-        }
-    });
-
-    document.addEventListener('keyup', (e) => {
-        if(e.key === 'Enter') {
-            if(document.getElementById('modal-overlay').style.display === 'flex') {
-                if(document.getElementById('highscore-area').style.display !== 'none') {
-                    saveScore();
-                } else if(document.getElementById('ranking-display').style.display !== 'none') {
-                    backToMenu();
-                }
-            }
-        }
-    });
-
     function handleGameOver(isSuccess) {
-        clearInterval(flightInterval); 
-        clearInterval(spriteInterval);
-        clearTimeout(angryTimer);
-        bgMusic.pause();
+        clearInterval(flightInterval); clearInterval(spriteInterval); clearTimeout(angryTimer); bgMusic.pause();
         
-        pendingTime = (Date.now() - startTime) / 1000; 
-        pendingRawScore = score;
+        pendingTime = (Date.now() - startTime) / 1000; pendingRawScore = score;
         let finalPoints = Math.floor(score * pendingMultiplier);
-        let percentage = Math.round((score / totalQuestionsCount) * 100) || 0;
 
         let modal = document.getElementById('modal-overlay');
-        let title = document.getElementById('modal-title');
-        let msg = document.getElementById('modal-msg');
-        let details = document.getElementById('modal-details');
-        
         document.getElementById('highscore-area').style.display = 'block'; 
         document.getElementById('stats-area').style.display = 'none';
         document.getElementById('ranking-display').style.display = 'none';
-        title.style.display = 'block'; msg.style.display = 'block';
+        
+        let title = document.getElementById('modal-title');
+        title.style.display = 'block'; document.getElementById('modal-msg').style.display = 'block';
 
         modal.style.display = 'flex';
 
         if (isSuccess) {
-            playAudio(sfxWin); 
-            title.innerText = "Fase Concluída!"; msg.innerText = "Excelente trabalho!";
-            title.style.color = "#39ff14";
+            playAudio(sfxWin); title.innerText = "Fase Concluída!"; title.style.color = "#39ff14";
+            document.getElementById('modal-msg').innerText = "Excelente trabalho!";
         } else {
-            playAudio(sfxLose); 
-            title.innerText = "Fim de Jogo!"; msg.innerText = "A bruxinha caiu...";
-            title.style.color = "orange";
+            playAudio(sfxLose); title.innerText = "Fim de Jogo!"; title.style.color = "orange";
+            document.getElementById('modal-msg').innerText = "A bruxinha caiu...";
         }
 
-        details.innerHTML = `Acertos: ${score}/${totalQuestionsCount} (${percentage}%)<br>Tempo: ${formatTime(pendingTime)}<br><span style="color:var(--hw-orange)">Pontos da Rodada: ${finalPoints}</span>`;
+        document.getElementById('modal-details').innerHTML = `Acertos: ${score}/${NUMERO_QUESTOES}<br><span style="color:var(--hw-orange)">Pontos da Rodada: ${finalPoints}</span>`;
         document.getElementById('player-name').value = '';
         setTimeout(()=> document.getElementById('player-name').focus(), 500);
     }
