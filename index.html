@@ -12,6 +12,8 @@
             --bg-color-1: #050511;
             --bg-color-2: #2a0a46;
             --bg-color-3: #0f2e0f;
+            /* Filtro para o fundo (Normal) */
+            --bg-filter: brightness(1);
         }
         
         /* MODO NOTURNO */
@@ -21,6 +23,8 @@
             --bg-color-1: #020205;
             --bg-color-2: #150523;
             --bg-color-3: #071707;
+            /* Filtro para o fundo (Escurecido) */
+            --bg-filter: brightness(0.4) grayscale(0.3);
             color: #ccc;
         }
 
@@ -36,9 +40,15 @@
         
         #game-wrapper { 
             width: 100%; height: 100%; position: relative; 
-            background: linear-gradient(to bottom, var(--bg-color-1) 0%, var(--bg-color-2) 60%, var(--bg-color-3) 100%);
+            /* ALTERAÇÃO: Fundo com imagem fundo_halloween_2.png */
+            background-image: url('fundo_halloween_2.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: var(--bg-filter); /* Aplica o filtro do modo noturno */
+            /* FIM DA ALTERAÇÃO */
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: background 0.3s;
+            transition: background 0.3s, filter 0.3s;
         }
 
         .screen {
@@ -79,7 +89,7 @@
         #ui { position: absolute; top: 10%; width: 100%; text-align: center; z-index: 20; pointer-events: none; }
         #question { font-size: 8vh; font-weight: bold; color: var(--hw-orange); text-shadow: 4px 4px #000; margin: 0; }
         
-        /* NOVO DISPLAY DE RESPOSTA (Substitui o Input) */
+        /* NOVO DISPLAY DE RESPOSTA */
         .answer-box { 
             font-size: 5vh; width: 25vw; max-width: 200px; height: 7vh; line-height: 7vh;
             text-align: center; border-radius: 15px; border: 4px solid var(--hw-orange); 
@@ -90,7 +100,7 @@
         #feedback { font-size: 4vh; font-weight: bold; height: 5vh; margin-top: 2vh; text-shadow: 2px 2px #000; color: #ffff00; }
         .stats { position: absolute; top: 20px; right: 20px; font-size: 3vh; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; }
 
-        /* TECLADO NUMÉRICO TRANSLÚCIDO */
+        /* TECLADO NUMÉRICO */
         #numpad {
             position: absolute; bottom: 5%; right: 5%;
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
@@ -122,7 +132,6 @@
         .ranking-table td { padding: 8px; border-bottom: 1px solid #444; }
         .rank-pos { color: var(--hw-orange); font-weight: bold; }
         .rank-score { color: var(--neon-green); text-align: right; font-weight: bold; }
-        .rank-time { color: #aaa; text-align: right; font-size: 0.8em; }
         
         .high-score-input {
             font-size: 24px; padding: 10px; border: 2px solid var(--neon-green); 
@@ -229,7 +238,7 @@
 </div>
 
 <script>
-    // --- CONTROLES DE INTERFACE (TELA CHEIA E NOTURNO) ---
+    // --- CONTROLES DE INTERFACE ---
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(err => {
@@ -250,12 +259,10 @@
     const IMPULSO_ACERTO = 10;
     const NUMERO_QUESTOES = 15; 
 
-    // --- IMAGENS (GIFS LOCAIS) ---
     const FLYING_GIFS = ["bruxinha.gif", "bruxinha2.gif", "bruxinha3.gif", "bruxinha4.gif"];
     const IMG_BRAVA = "bruxinha-brava.gif"; 
     const IMG_CAIDA = "bruxinha-caindo.gif";
 
-    // --- CONTROLE DE ÁUDIO ---
     let audioEnabled = true;
     const bgMusic = new Audio('musica.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
     const sfxCrash = new Audio('crash.mp3'); 
@@ -296,8 +303,7 @@
         if(type === 'mista1') return 2; 
         if(type === 'mista2') return 8; 
         let n = parseInt(type);
-        if(n === 0) return 0.5; 
-        return n; 
+        return n === 0 ? 0.5 : n; 
     }
 
     function getRanking() {
@@ -337,7 +343,6 @@
         for(let i=0; i<ranking.length; i++) {
             tbody.innerHTML += `<tr><td class="rank-pos">${i+1}</td><td>${ranking[i].name}</td><td class="rank-score">${ranking[i].score}</td></tr>`;
         }
-        if(ranking.length === 0) tbody.innerHTML = `<tr><td colspan="3">Nenhum recorde ainda!</td></tr>`;
     }
 
     function formatTime(seconds) {
@@ -352,8 +357,6 @@
     let flightInterval, spriteInterval, isGameOver = false;
     let isAngry = false, angryTimer;
     let pendingRawScore = 0, pendingMultiplier = 1, pendingTime = 0, startTime = 0;
-    
-    // Variável para armazenar a resposta digitada sem o input HTML nativo
     let currentAnswer = ""; 
 
     window.onload = function() {
@@ -382,7 +385,6 @@
         isGameOver = false; isAngry = false; clearTimeout(angryTimer);
         
         document.getElementById('witch').src = FLYING_GIFS[0];
-        document.getElementById('witch').style.transform = "scaleX(1)";
         document.getElementById('menu').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'none';
         document.getElementById('game-container').style.display = 'flex';
@@ -403,9 +405,7 @@
             base = base.sort(()=>Math.random()-0.5).slice(0, NUMERO_QUESTOES);
         }
         
-        if(base.length > NUMERO_QUESTOES) base = base.slice(0, NUMERO_QUESTOES);
         if(mode === 'rand') base = base.sort(()=>Math.random()-0.5);
-        
         questions = base; currentIndex = 0;
         startTime = Date.now(); 
         startMechanics();
@@ -416,30 +416,20 @@
         if(currentIndex >= questions.length) { handleGameOver(true); return; }
         currentQ = questions[currentIndex];
         document.getElementById('question').innerText = `${currentQ.n1} x ${currentQ.n2}`;
-        
-        // Limpa o painel digital para a nova pergunta
         currentAnswer = "";
         document.getElementById('answer-display').innerText = "?";
         document.getElementById('feedback').innerText = '';
     }
 
-    // --- CONTROLE DE ENTRADA (FÍSICO E TOUCH) ---
     function handleNumpad(val) {
         if (isGameOver || document.getElementById('feedback').innerText !== '') return;
-
-        if (val === 'DEL') {
-            currentAnswer = currentAnswer.slice(0, -1);
-        } else if (val === 'ENTER') {
-            checkAnswer();
-        } else {
-            if (currentAnswer.length < 4) currentAnswer += val;
-        }
-        
+        if (val === 'DEL') currentAnswer = currentAnswer.slice(0, -1);
+        else if (val === 'ENTER') checkAnswer();
+        else if (currentAnswer.length < 4) currentAnswer += val;
         document.getElementById('answer-display').innerText = currentAnswer || '?';
     }
 
     document.addEventListener('keydown', (e) => {
-        // Se o jogo está ativo e sem modal na frente, captura os números físicos
         if(document.getElementById('game-container').style.display === 'flex' && !isGameOver) {
             if (e.key >= '0' && e.key <= '9') handleNumpad(e.key);
             if (e.key === 'Backspace') handleNumpad('DEL');
@@ -449,7 +439,6 @@
 
     function checkAnswer() {
         if (currentAnswer === "") return;
-        
         let userAns = parseInt(currentAnswer);
         let correct = currentQ.n1 * currentQ.n2;
         let fb = document.getElementById('feedback');
@@ -469,9 +458,7 @@
                 if(!isGameOver) document.getElementById('witch').src = FLYING_GIFS[0];
             }, 3000);
         }
-        
-        currentIndex++; 
-        setTimeout(showQuestion, 1500);
+        currentIndex++; setTimeout(showQuestion, 1500);
     }
 
     function startMechanics() {
@@ -498,48 +485,35 @@
     }
 
     function handleCrash() {
-        isGameOver = true; clearInterval(flightInterval); clearInterval(spriteInterval); clearTimeout(angryTimer);
+        isGameOver = true; clearInterval(flightInterval); clearInterval(spriteInterval);
         bgMusic.pause(); document.getElementById('witch').src = IMG_CAIDA; playAudio(sfxCrash);
         document.getElementById('feedback').innerText = "Oh-ouh!"; document.getElementById('feedback').style.color = "red";
         setTimeout(() => { handleGameOver(false); }, 2500);
     }
 
     function handleGameOver(isSuccess) {
-        clearInterval(flightInterval); clearInterval(spriteInterval); clearTimeout(angryTimer); bgMusic.pause();
-        
+        clearInterval(flightInterval); clearInterval(spriteInterval); bgMusic.pause();
         pendingTime = (Date.now() - startTime) / 1000; pendingRawScore = score;
         let finalPoints = Math.floor(score * pendingMultiplier);
-
         let modal = document.getElementById('modal-overlay');
         document.getElementById('highscore-area').style.display = 'block'; 
         document.getElementById('stats-area').style.display = 'none';
         document.getElementById('ranking-display').style.display = 'none';
-        
-        let title = document.getElementById('modal-title');
-        title.style.display = 'block'; document.getElementById('modal-msg').style.display = 'block';
-
         modal.style.display = 'flex';
 
         if (isSuccess) {
-            playAudio(sfxWin); title.innerText = "Fase Concluída!"; title.style.color = "#39ff14";
-            document.getElementById('modal-msg').innerText = "Excelente trabalho!";
+            playAudio(sfxWin); document.getElementById('modal-title').innerText = "Fase Concluída!";
         } else {
-            playAudio(sfxLose); title.innerText = "Fim de Jogo!"; title.style.color = "orange";
-            document.getElementById('modal-msg').innerText = "A bruxinha caiu...";
+            playAudio(sfxLose); document.getElementById('modal-title').innerText = "Fim de Jogo!";
         }
-
-        document.getElementById('modal-details').innerHTML = `Acertos: ${score}/${NUMERO_QUESTOES}<br><span style="color:var(--hw-orange)">Pontos da Rodada: ${finalPoints}</span>`;
-        document.getElementById('player-name').value = '';
-        setTimeout(()=> document.getElementById('player-name').focus(), 500);
+        document.getElementById('modal-details').innerHTML = `Acertos: ${score}/${NUMERO_QUESTOES}<br>Pontos: ${finalPoints}`;
     }
 
     function backToMenu() {
-        bgMusic.pause();
         document.getElementById('modal-overlay').style.display = 'none';
         document.getElementById('game-container').style.display = 'none';
         document.getElementById('menu').style.display = 'flex';
     }
 </script>
-
 </body>
 </html>
