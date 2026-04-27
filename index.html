@@ -36,7 +36,6 @@
             overflow: hidden;
         }
 
-        /* CONFIGURAÇÃO DO VÍDEO DE FUNDO */
         #bg-video {
             position: absolute;
             top: 50%;
@@ -222,11 +221,35 @@
 </div>
 
 <script>
-    // --- ALTERAÇÃO AQUI ---
-    // Removida a lógica antiga que reiniciava o vídeo manualmente
-    // baseada em tempo fixo (timeupdate), pois o atributo 'loop' no HTML
-    // já resolve isso para qualquer duração de vídeo.
-    // ----------------------
+    const video = document.getElementById('bg-video');
+    video.addEventListener('timeupdate', function() {
+        if(this.currentTime > this.duration - 0.3){
+            this.currentTime = 0;
+            this.play();
+        }
+    });
+
+    // --- NOVA LÓGICA: SUPORTE AO TECLADO FÍSICO ---
+    document.addEventListener('keydown', (event) => {
+        // Se estivermos na tela de salvar nome (modal aberto), ignoramos o controle do jogo
+        if (document.getElementById('modal-overlay').style.display === 'flex' && 
+            document.getElementById('highscore-area').style.display === 'block') {
+            return; 
+        }
+
+        // Bloqueia comandos do jogo se o container do jogo não estiver visível
+        if (document.getElementById('game-container').style.display !== 'flex') return;
+
+        const key = event.key;
+        if (key >= '0' && key <= '9') {
+            handleNumpad(key);
+        } else if (key === 'Enter') {
+            handleNumpad('ENTER');
+        } else if (key === 'Backspace') {
+            handleNumpad('DEL');
+        }
+    });
+    // ----------------------------------------------
 
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
