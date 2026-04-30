@@ -85,7 +85,18 @@
             transition: all 0.3s; pointer-events: none; user-select: none;
         }
         
-        .answer-reveal { color: var(--neon-red) !important; border-color: var(--neon-red) !important; animation: pulse 0.5s infinite alternate; }
+        /* ── ALTERAÇÃO 2: pisca em neon vermelho com sombra intensa ── */
+        .answer-reveal {
+            color: var(--neon-red) !important;
+            border-color: var(--neon-red) !important;
+            text-shadow: 0 0 12px var(--neon-red), 0 0 24px var(--neon-red);
+            animation: blink-neon 0.5s infinite alternate;
+        }
+
+        @keyframes blink-neon {
+            from { opacity: 1;   transform: scale(1);    }
+            to   { opacity: 0.3; transform: scale(1.06); }
+        }
 
         #feedback { font-size: 4vh; font-weight: bold; height: 6vh; margin-top: 1vh; text-shadow: 2px 2px #000; }
         .stats { position: absolute; top: 20px; right: 20px; font-size: 3vh; background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 20px; z-index: 20; border: 1px solid var(--hw-orange); }
@@ -199,8 +210,14 @@
                 <div id="bonus-badge" style="display:none; color:black; background: var(--neon-green); font-weight:bold; margin: 10px; border: 2px solid white; padding: 10px; border-radius: 10px; font-size: 2.2vh;">✨ BÓNUS DE MESTRE: +5000 ✨</div>
             </div>
             <div id="highscore-input-area" style="margin-top:20px;">
-                <input type="text" id="player-name" maxlength="12" placeholder="O TEU NOME" style="padding:10px; border-radius:10px; border:2px solid var(--neon-green); background:black; color:white; text-align:center; font-size: 2vh; text-transform: uppercase;">
+                <input type="text" id="player-name" maxlength="12" placeholder="O TEU NOME"
+                    style="padding:10px; border-radius:10px; border:2px solid var(--neon-green);
+                           background:black; color:white; text-align:center; font-size: 2vh; text-transform: uppercase;">
                 <br>
+                <!-- dica visual para o usuário de PC -->
+                <p style="font-size:1.6vh; color:#aaa; margin: 6px 0 0;">
+                    💡 PC: pressione <kbd style="background:#333; padding:2px 6px; border-radius:4px; border:1px solid #666;">Enter</kbd> para salvar
+                </p>
                 <button class="btn" onclick="saveScore()">SALVAR NO RANKING</button>
             </div>
             <div id="ranking-view" style="display:none;">
@@ -216,7 +233,6 @@
 <script>
     // --- Configurações Iniciais ---
     const video = document.getElementById('bg-video');
-    // Loop perfeito para o vídeo de 10s (incluindo o ping-pong)
     video.addEventListener('timeupdate', function() { 
         if(this.currentTime > this.duration - 0.15) {
             this.currentTime = 0;
@@ -228,15 +244,30 @@
     const bgMusic = new Audio('musica.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
     const sfxWin = new Audio('vitoria.mp3'), sfxLose = new Audio('derrota.mp3'), sfxCrash = new Audio('crash.mp3');
 
-    // --- Suporte ao Teclado Físico ---[cite: 6]
+    // ── ALTERAÇÃO 1: Enter no campo de nome salva o placar (mantido)
+    // ── ALTERAÇÃO ESPECIAL: Enter no MENU inicial inicia o jogo!
     document.addEventListener('keydown', (event) => {
-        // Ignora se estivermos digitando o nome no final
-        if (document.getElementById('modal-overlay').style.display === 'flex' && 
-            document.getElementById('highscore-input-area').style.display === 'block') {
-            return; 
+        const modalVisible  = document.getElementById('modal-overlay').style.display === 'flex';
+        const nameVisible   = document.getElementById('highscore-input-area').style.display !== 'none';
+        const menuVisible = document.getElementById('menu').style.display === 'flex';
+
+        // NOVO: Se o menu está visível e pressionou Enter, inicia a missão
+        if (menuVisible && event.key === 'Enter') {
+            event.preventDefault();
+            const startBtn = document.getElementById('btn-start');
+            if (startBtn) startBtn.click();
+            return;
         }
 
-        // Bloqueia comandos se não estivermos no meio do jogo
+        if (modalVisible && nameVisible) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                saveScore();
+            }
+            return;
+        }
+
+        // Bloqueia comandos numéricos fora do jogo
         if (document.getElementById('game-container').style.display !== 'flex') return;
 
         const key = event.key;
@@ -283,8 +314,9 @@
         witchX: 10,
         witchDir: 1,
         currentAnswer: "",
-        canPoint: true,        // Permite pontuar se acertar de primeira
-        isJornadaMaster: false
+        canPoint: true,
+        isJornadaMaster: false,
+        finalCalculatedScore: 0
     };
 
     const VEL_H = 0.45, GRAVIDADE = 0.09, IMPULSO = 10, NUM_QUESTOES_MESTRE = 20;
@@ -309,10 +341,10 @@
             score: 0, questions: [], currentIndex: 0, witchY: 60, witchX: 10, witchDir: 1,
             isGameOver: false, currentAnswer: "", canPoint: true,
             startTime: Date.now(), isJornadaMaster: type === 'master',
-            multiplier: type === 'master' ? 15 : (isNaN(type) ? (type==='mista2'?8:2) : (parseInt(type) === 0 ? 0.5 : parseInt(type)))
+            multiplier: type === 'master' ? 15 : (isNaN(type) ? (type==='mista2'?8:2) : (parseInt(type) === 0 ? 0.5 : parseInt(type))),
+            finalCalculatedScore: 0
         };
 
-        // Gerar Questões
         if(type === 'master') {
             for(let i=0; i<NUM_QUESTOES_MESTRE; i++) gameState.questions.push({n1: Math.floor(Math.random()*13), n2: Math.floor(Math.random()*13)});
         } else if(!isNaN(type)) {
@@ -365,7 +397,6 @@
         if(parseInt(gameState.currentAnswer) === correct) {
             fb.innerText = "MUITO BEM! ✨"; fb.style.color = "var(--neon-green)";
             
-            // Se acertar e for a primeira tentativa
             if(gameState.canPoint) {
                 gameState.score += Math.floor(1 * gameState.multiplier);
                 document.getElementById('display-score').innerText = gameState.score;
@@ -374,18 +405,22 @@
             gameState.witchY = Math.min(gameState.witchY + IMPULSO, 80);
             gameState.currentIndex++;
             setTimeout(showQuestion, 1200);
+
         } else {
             fb.innerText = "OPS! OLHA SÓ:"; fb.style.color = "white";
-            display.innerText = correct;
-            display.classList.add('answer-reveal');
-            
-            // Marca que já não vale pontos nesta rodada
-            gameState.canPoint = false; 
+
+            display.innerText = "";
+            display.className = "answer-box";
+
+            setTimeout(() => {
+                display.innerText = correct;
+                display.classList.add('answer-reveal');
+            }, 300);
+
+            gameState.canPoint = false;
             gameState.witchY -= 5;
             document.getElementById('witch').src = "bruxinha-brava.gif";
-            
-            // Re-insere no fim da lista para forçar o aluno a responder de novo depois
-            gameState.questions.push({...q}); 
+            gameState.questions.push({...q});
 
             setTimeout(() => {
                 display.classList.remove('answer-reveal');
@@ -436,11 +471,12 @@
         
         let finalScore = gameState.score;
 
-        // Bónus de Jornada do Mestre Supremo
         if(success && gameState.isJornadaMaster) {
             finalScore += 5000;
             document.getElementById('bonus-badge').style.display = 'block';
             triggerMasterEffects();
+        } else {
+            document.getElementById('bonus-badge').style.display = 'none';
         }
 
         gameState.finalCalculatedScore = finalScore;
@@ -470,14 +506,41 @@
         }
     }
 
+    // ========== NOVA FUNÇÃO: SALVAR COM ACUMULAÇÃO POR NOME ==========
     function saveScore() {
-        const name = document.getElementById('player-name').value.trim().toUpperCase() || "BRUXINHA";
+        let rawName = document.getElementById('player-name').value.trim();
+        if (rawName === "") rawName = "BRUXINHA";
+        const playerName = rawName.toUpperCase();
+        const currentScore = gameState.finalCalculatedScore;
+        
+        // Carrega ranking atual
         let ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         
-        ranking.push({name, score: gameState.finalCalculatedScore});
-        ranking.sort((a,b) => b.score - a.score);
-        localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking.slice(0, 15)));
+        // Procura se já existe entrada com exatamente o mesmo nome
+        let existingIndex = -1;
+        for (let i = 0; i < ranking.length; i++) {
+            if (ranking[i].name === playerName) {
+                existingIndex = i;
+                break;
+            }
+        }
         
+        if (existingIndex !== -1) {
+            // ACUMULA: soma a pontuação atual à pontuação existente
+            ranking[existingIndex].score += currentScore;
+        } else {
+            // Novo jogador: adiciona normalmente
+            ranking.push({ name: playerName, score: currentScore });
+        }
+        
+        // Ordena do maior para o menor e mantém apenas top 15
+        ranking.sort((a, b) => b.score - a.score);
+        if (ranking.length > 15) ranking = ranking.slice(0, 15);
+        
+        // Salva no localStorage
+        localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking));
+        
+        // Esconde área de entrada e exibe ranking atualizado
         document.getElementById('highscore-input-area').style.display = 'none';
         document.getElementById('stats-summary').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'block';
@@ -487,10 +550,18 @@
     function renderTable() {
         const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         const table = document.getElementById('ranking-table');
-        table.innerHTML = "<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>";
-        ranking.forEach((r, i) => {
-            table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td>${r.name}</td><td class="rank-score">${r.score}</td></tr>`;
-        });
+        table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
+        if (ranking.length === 0) {
+            table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum feiticeiro ainda ✨</td></tr>`;
+        } else {
+            ranking.forEach((r, i) => {
+                table.innerHTML += `<tr>
+                    <td class="rank-pos">${i+1}º</td>
+                    <td>${r.name}</td>
+                    <td class="rank-score">${r.score}</td>
+                </tr>`;
+            });
+        }
     }
 
     function showRankingOnly() {
