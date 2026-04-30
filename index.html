@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tabuada da Bruxinha - EdHumanas</title>
+    <title>Tabuada da Bruxinha - Mestre Supremo</title>
     <style>
         :root { 
             --hw-orange: #ff9900; 
             --hw-purple: #2e0249; 
             --neon-green: #39ff14; 
+            --neon-red: #ff3131;
             --bg-filter: brightness(1);
         }
         
@@ -37,18 +38,12 @@
         }
 
         #bg-video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            z-index: 1;
-            transform: translate(-50%, -50%);
-            object-fit: cover;
-            filter: var(--bg-filter);
-            transition: filter 0.3s;
+            position: absolute; top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto;
+            z-index: 1; transform: translate(-50%, -50%);
+            object-fit: cover; filter: var(--bg-filter);
+            pointer-events: none;
         }
 
         .screen {
@@ -67,79 +62,78 @@
             background: rgba(0, 0, 0, 0.6); border: 2px solid var(--hw-orange); color: white;
             width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
             font-size: 24px; display: flex; justify-content: center; align-items: center;
-            transition: transform 0.2s, background 0.2s; user-select: none;
+            transition: transform 0.2s; user-select: none;
         }
         .icon-btn:hover { transform: scale(1.1); background: var(--hw-orange); color: black; }
 
         .menu-box {
-            background: rgba(46, 2, 73, 0.85);
+            background: rgba(46, 2, 73, 0.9);
             border: 4px solid var(--hw-orange);
-            padding: 3vh; border-radius: 20px;
-            box-shadow: 0 0 30px rgba(255, 153, 0, 0.3);
+            padding: 25px; border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 153, 0, 0.5);
             text-align: center; max-width: 90%;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
 
-        #ui { position: absolute; top: 10%; width: 100%; text-align: center; z-index: 20; pointer-events: none; }
+        #ui { position: absolute; top: 8%; width: 100%; text-align: center; z-index: 20; pointer-events: none; }
         #question { font-size: 8vh; font-weight: bold; color: var(--hw-orange); text-shadow: 4px 4px #000; margin: 0; }
         
         .answer-box { 
-            font-size: 5vh; width: 25vw; max-width: 200px; height: 7vh; line-height: 7vh;
+            font-size: 6vh; width: 30vw; max-width: 250px; height: 9vh; line-height: 9vh;
             text-align: center; border-radius: 15px; border: 4px solid var(--hw-orange); 
-            background: rgba(0,0,0,0.8); color: white; margin: 1vh auto;
-            pointer-events: none; user-select: none;
+            background: rgba(0,0,0,0.85); color: white; margin: 1vh auto;
+            transition: all 0.3s; pointer-events: none; user-select: none;
         }
         
-        #feedback { font-size: 4vh; font-weight: bold; height: 5vh; margin-top: 2vh; text-shadow: 2px 2px #000; color: #ffff00; }
-        .stats { position: absolute; top: 20px; right: 20px; font-size: 3vh; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; z-index: 20; }
+        .answer-reveal { color: var(--neon-red) !important; border-color: var(--neon-red) !important; animation: pulse 0.5s infinite alternate; }
+
+        #feedback { font-size: 4vh; font-weight: bold; height: 6vh; margin-top: 1vh; text-shadow: 2px 2px #000; }
+        .stats { position: absolute; top: 20px; right: 20px; font-size: 3vh; background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 20px; z-index: 20; border: 1px solid var(--hw-orange); }
 
         #numpad {
             position: absolute; bottom: 5%; right: 5%;
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-            background: rgba(46, 2, 73, 0.6); padding: 15px; border-radius: 15px;
-            border: 2px solid rgba(255,153,0,0.5); backdrop-filter: blur(8px); z-index: 30;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            background: rgba(46, 2, 73, 0.7); padding: 12px; border-radius: 15px;
+            border: 2px solid var(--hw-orange); backdrop-filter: blur(10px); z-index: 30;
         }
         .num-key {
-            background: rgba(0,0,0,0.7); color: white; border: 2px solid var(--hw-orange);
-            width: 8vh; height: 8vh; font-size: 3vh; border-radius: 10px; cursor: pointer;
+            background: rgba(0,0,0,0.8); color: white; border: 2px solid var(--hw-orange);
+            width: 7.5vh; height: 7.5vh; font-size: 3vh; border-radius: 10px; cursor: pointer;
             display: flex; justify-content: center; align-items: center;
-            user-select: none; font-weight: bold; transition: background 0.1s;
+            font-weight: bold; transition: 0.1s; user-select: none;
         }
-        .num-key:active { background: var(--hw-orange); color: black; transform: scale(0.95); }
-        .num-key.enter { background: var(--neon-green); color: black; border-color: white; }
+        .num-key:active { background: var(--hw-orange); color: black; transform: scale(0.9); }
+        .num-key.enter { background: var(--neon-green); color: black; }
 
         #witch { 
-            position: absolute; 
-            width: 22vh; 
-            bottom: 50%; left: 10%; 
-            transition: bottom 0.5s ease-out; 
-            z-index: 15; filter: drop-shadow(4px 4px 8px black);
-        }
-
-        #modal-overlay { background: rgba(0, 0, 0, 0.9); display: none; z-index: 100; }
-        .ranking-table { width: 95%; max-width: 600px; border-collapse: collapse; margin: 20px 0; font-size: 2vh; }
-        .ranking-table th { border-bottom: 2px solid var(--hw-orange); color: var(--hw-orange); padding: 5px; }
-        .ranking-table td { padding: 8px; border-bottom: 1px solid #444; }
-        .rank-pos { color: var(--hw-orange); font-weight: bold; }
-        .rank-score { color: var(--neon-green); text-align: right; font-weight: bold; }
-        
-        .high-score-input {
-            font-size: 24px; padding: 10px; border: 2px solid var(--neon-green); 
-            background: #000; color: var(--neon-green); text-align: center; 
-            text-transform: uppercase; margin: 10px 0;
+            position: absolute; width: 22vh; bottom: 50%; left: 10%; 
+            transition: bottom 0.5s ease-out; z-index: 15; filter: drop-shadow(4px 4px 8px black);
         }
 
         .btn { 
-            background: var(--hw-orange); border: none; padding: 1.5vh 4vh; font-size: 2.5vh; 
-            cursor: pointer; border-radius: 50px; margin: 10px; font-weight: bold; color: black; 
-            box-shadow: 0 4px #cc7a00; transition: transform 0.2s;
+            background: var(--hw-orange); border: none; padding: 12px 30px; font-size: 2.2vh; 
+            cursor: pointer; border-radius: 50px; margin: 8px; font-weight: bold; color: black; 
+            box-shadow: 0 4px #cc7a00; transition: 0.2s;
         }
-        .btn:hover { background: #ffaa33; transform: scale(1.05); }
-        .btn:active { transform: scale(0.95); }
-        select, .radio-group { font-size: 2.5vh; padding: 10px; margin: 10px; border-radius: 10px; background: white; color: black; }
+        .btn:hover { transform: scale(1.05); background: #ffaa33; }
+        
+        #master-effect {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            pointer-events: none; z-index: 200; display: none;
+            background: radial-gradient(circle, transparent 30%, rgba(255, 153, 0, 0.2) 100%);
+        }
+
+        @keyframes pulse { from { opacity: 1; transform: scale(1); } to { opacity: 0.7; transform: scale(1.05); } }
+        
+        .ranking-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 1.8vh; }
+        .ranking-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .rank-pos { color: var(--hw-orange); font-weight: bold; }
+        .rank-score { color: var(--neon-green); text-align: right; font-weight: bold; }
     </style>
 </head>
 <body>
+
+<div id="master-effect"></div>
 
 <div id="game-wrapper">
     <video autoplay muted loop playsinline id="bg-video">
@@ -154,24 +148,25 @@
 
     <div id="menu" class="screen">
         <div class="menu-box">
-            <h2>🎃 EdHumanas 🎃</h2>
-            <p>Tabuada da Bruxinha</p>
-            <select id="tabuada-select">
-                <option value="mista1">Mista Fácil (x2 pontos)</option>
-                <option value="mista2">Mista Difícil (x8 pontos)</option>
+            <h1 style="color:var(--hw-orange); margin:0; font-size: 4vh;">🎃 EdHumanas 🎃</h1>
+            <p style="margin-bottom:20px; font-size: 2.5vh;">Tabuada da Bruxinha</p>
+            <select id="tabuada-select" style="width: 85%; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 2vh;">
+                <option value="master">🏆 JORNADA MESTRE SUPREMO (x15)</option>
+                <option value="mista2">Mista Difícil (x8)</option>
+                <option value="mista1">Mista Fácil (x2)</option>
             </select>
-            <div class="radio-group">
+            <div style="margin: 15px 0; font-size: 2vh;">
                 <label><input type="radio" name="ordem" value="seq" checked> Sequencial</label>
-                <label><input type="radio" name="ordem" value="rand"> Aleatória</label>
+                <label style="margin-left:15px;"><input type="radio" name="ordem" value="rand"> Aleatória</label>
             </div>
-            <button class="btn" id="btn-start">JOGAR</button>
+            <button class="btn" id="btn-start">INICIAR MISSÃO</button>
             <br>
-            <button class="btn" style="background:#4b0082; color:white;" id="btn-ranking">🏆 RANKING</button>
+            <button class="btn" style="background:#4b0082; color:white; font-size: 2vh;" id="btn-ranking">🏆 RANKING</button>
         </div>
     </div>
 
     <div id="game-container" class="screen" style="display:none;">
-        <div class="stats">Acertos: <span id="score">0</span></div>
+        <div class="stats">Pontos: <span id="display-score">0</span></div>
         <div id="ui">
             <div id="question">--</div>
             <div id="answer-display" class="answer-box">?</div>
@@ -196,48 +191,52 @@
         <img id="witch" src="bruxinha.gif" alt="Bruxinha">
     </div>
 
-    <div id="modal-overlay" class="screen">
-        <div class="menu-box">
-            <h2 id="modal-title">Fim de Jogo</h2>
-            <p id="modal-msg">Mensagem</p>
-            <div id="highscore-area" style="display:none;">
-                <div class="new-record">✨ REGISTRAR PONTOS ✨</div>
-                <input type="text" id="player-name" class="high-score-input" maxlength="12" placeholder="SEU NOME">
+    <div id="modal-overlay" class="screen" style="display:none; background: rgba(0,0,0,0.95);">
+        <div class="menu-box" id="modal-content">
+            <h2 id="modal-title" style="font-size: 4vh;">Fim de Jogo</h2>
+            <div id="stats-summary">
+                <p id="modal-details" style="font-size: 2.5vh;"></p>
+                <div id="bonus-badge" style="display:none; color:black; background: var(--neon-green); font-weight:bold; margin: 10px; border: 2px solid white; padding: 10px; border-radius: 10px; font-size: 2.2vh;">✨ BÓNUS DE MESTRE: +5000 ✨</div>
+            </div>
+            <div id="highscore-input-area" style="margin-top:20px;">
+                <input type="text" id="player-name" maxlength="12" placeholder="O TEU NOME" style="padding:10px; border-radius:10px; border:2px solid var(--neon-green); background:black; color:white; text-align:center; font-size: 2vh; text-transform: uppercase;">
                 <br>
-                <button class="btn" onclick="saveScore()">SALVAR & VER RANKING</button>
+                <button class="btn" onclick="saveScore()">SALVAR NO RANKING</button>
             </div>
-            <div id="stats-area">
-                <p id="modal-details" style="font-size: 2.2vh; font-weight:bold; line-height: 1.5;"></p>
-                <button class="btn" onclick="backToMenu()">VOLTAR</button>
-                <button class="btn" style="background:#4b0082; color:white;" onclick="startGame()">JOGAR NOVAMENTE ↺</button>
-            </div>
-            <div id="ranking-display" style="display:none; width:100%;">
+            <div id="ranking-view" style="display:none;">
                 <h3 style="color:var(--hw-orange)">🏆 CLASSIFICAÇÃO GERAL 🏆</h3>
-                <table class="ranking-table" id="ranking-table-body"></table>
-                <button class="btn" onclick="backToMenu()">VOLTAR AO MENU</button>
+                <table class="ranking-table" id="ranking-table"></table>
+                <br>
+                <button class="btn" onclick="location.reload()">VOLTAR AO INÍCIO</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // --- Configurações Iniciais ---
     const video = document.getElementById('bg-video');
-    video.addEventListener('timeupdate', function() {
-        if(this.currentTime > this.duration - 0.3){
+    // Loop perfeito para o vídeo de 10s (incluindo o ping-pong)
+    video.addEventListener('timeupdate', function() { 
+        if(this.currentTime > this.duration - 0.15) {
             this.currentTime = 0;
             this.play();
-        }
+        } 
     });
 
-    // --- NOVA LÓGICA: SUPORTE AO TECLADO FÍSICO ---
+    let audioEnabled = true;
+    const bgMusic = new Audio('musica.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
+    const sfxWin = new Audio('vitoria.mp3'), sfxLose = new Audio('derrota.mp3'), sfxCrash = new Audio('crash.mp3');
+
+    // --- Suporte ao Teclado Físico ---[cite: 6]
     document.addEventListener('keydown', (event) => {
-        // Se estivermos na tela de salvar nome (modal aberto), ignoramos o controle do jogo
+        // Ignora se estivermos digitando o nome no final
         if (document.getElementById('modal-overlay').style.display === 'flex' && 
-            document.getElementById('highscore-area').style.display === 'block') {
+            document.getElementById('highscore-input-area').style.display === 'block') {
             return; 
         }
 
-        // Bloqueia comandos do jogo se o container do jogo não estiver visível
+        // Bloqueia comandos se não estivermos no meio do jogo
         if (document.getElementById('game-container').style.display !== 'flex') return;
 
         const key = event.key;
@@ -249,7 +248,6 @@
             handleNumpad('DEL');
         }
     });
-    // ----------------------------------------------
 
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
@@ -263,184 +261,245 @@
         document.body.classList.toggle('dark-mode');
     }
 
-    const VELOCIDADE_HORIZONTAL = 0.45, FORCA_GRAVIDADE = 0.09, IMPULSO_ACERTO = 10, NUMERO_QUESTOES = 15; 
-    const FLYING_GIFS = ["bruxinha.gif", "bruxinha2.gif", "bruxinha3.gif", "bruxinha4.gif"];
-    const IMG_BRAVA = "bruxinha-brava.gif", IMG_CAIDA = "bruxinha-caindo.gif";
-
-    let audioEnabled = true;
-    const bgMusic = new Audio('musica.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
-    const sfxCrash = new Audio('crash.mp3'), sfxWin = new Audio('vitoria.mp3'), sfxLose = new Audio('derrota.mp3'); 
-    const audiosAcerto = [{ t: "Beleza!", u: "beleza.mp3" }, { t: "Muito bem!", u: "muitobem.mp3" }];
-    const audiosErro = [{ t: "Continue tentando!", u: "tente.mp3" }, { t: "Não foi desta vez!", u: "naofoi.mp3" }];
-
     function toggleAudio() {
         audioEnabled = !audioEnabled;
-        const btn = document.getElementById('btn-audio');
-        btn.innerText = audioEnabled ? "🔊" : "🔇";
-        if(audioEnabled && document.getElementById('game-container').style.display === 'flex') bgMusic.play().catch(e=>{});
-        else bgMusic.pause();
-    }
-
-    function playAudio(audioObj) {
-        if(!audioEnabled || !audioObj) return;
-        audioObj.currentTime = 0;
-        audioObj.play().catch(e => {});
-    }
-
-    function darFeedback(tipo) {
-        let lista = tipo === 'acerto' ? audiosAcerto : audiosErro;
-        let item = lista[Math.floor(Math.random() * lista.length)];
-        let audio = new Audio(item.u);
-        playAudio(audio);
-        return item.t;
-    }
-
-    function getMultiplier(type) {
-        if(type === 'mista1') return 2; if(type === 'mista2') return 8; 
-        let n = parseInt(type); return n === 0 ? 0.5 : n; 
-    }
-
-    function getRanking() {
-        try { return JSON.parse(localStorage.getItem('bruxinha_ranking_v2')) || []; } catch (e) { return []; }
-    }
-
-    function saveScore() {
-        let name = document.getElementById('player-name').value.trim().toUpperCase() || "ANÔNIMO";
-        let ranking = getRanking();
-        let roundScore = Math.floor(pendingRawScore * pendingMultiplier);
-        let existingPlayer = ranking.find(p => p.name === name);
-        if (existingPlayer) { existingPlayer.score += roundScore; existingPlayer.time += pendingTime; }
-        else { ranking.push({ name: name, score: roundScore, time: pendingTime }); }
-        ranking.sort((a, b) => b.score !== a.score ? b.score - a.score : a.time - b.time);
-        if (ranking.length > 15) ranking = ranking.slice(0, 15);
-        localStorage.setItem('bruxinha_ranking_v2', JSON.stringify(ranking));
-        document.getElementById('highscore-area').style.display = 'none';
-        document.getElementById('stats-area').style.display = 'none';
-        document.getElementById('ranking-display').style.display = 'block';
-        renderRankingTable();
-    }
-
-    function renderRankingTable() {
-        let ranking = getRanking();
-        let tbody = document.getElementById('ranking-table-body');
-        tbody.innerHTML = `<tr><th>#</th><th>JOGADOR</th><th>PTS</th></tr>`;
-        ranking.forEach((r, i) => { tbody.innerHTML += `<tr><td class="rank-pos">${i+1}</td><td>${r.name}</td><td class="rank-score">${r.score}</td></tr>`; });
-    }
-
-    let questions = [], currentIndex = 0, score = 0, witchY = 60, currentQ, witchX = 10, witchDirection = 1, flightInterval, spriteInterval, isGameOver = false, isAngry = false, angryTimer, pendingRawScore = 0, pendingMultiplier = 1, pendingTime = 0, startTime = 0, currentAnswer = ""; 
-
-    window.onload = function() {
-        const select = document.getElementById('tabuada-select');
-        for(let i=0; i<=12; i++) {
-            let opt = document.createElement('option'); opt.value = i;
-            opt.innerHTML = `Tabuada do ${i}` + (i === 0 ? " (x0.5 pts)" : ` (x${i} pts)`);
-            select.appendChild(opt);
+        document.getElementById('btn-audio').innerText = audioEnabled ? "🔊" : "🔇";
+        if(audioEnabled && document.getElementById('game-container').style.display === 'flex') {
+            bgMusic.play().catch(e=>{});
+        } else {
+            bgMusic.pause();
         }
-        document.getElementById('btn-start').onclick = startGame;
-        document.getElementById('btn-ranking').onclick = () => {
-            document.getElementById('menu').style.display = 'none';
-            document.getElementById('modal-overlay').style.display = 'flex';
-            document.getElementById('highscore-area').style.display = 'none';
-            document.getElementById('stats-area').style.display = 'none';
-            document.getElementById('ranking-display').style.display = 'block';
-            renderRankingTable();
-        };
+    }
+
+    // --- Variáveis de Estado ---
+    let gameState = {
+        score: 0,
+        questions: [],
+        currentIndex: 0,
+        multiplier: 1,
+        startTime: 0,
+        isGameOver: false,
+        witchY: 60,
+        witchX: 10,
+        witchDir: 1,
+        currentAnswer: "",
+        canPoint: true,        // Permite pontuar se acertar de primeira
+        isJornadaMaster: false
     };
 
-    function startGame() {
-        if(audioEnabled) { bgMusic.currentTime = 0; playAudio(bgMusic); }
-        isGameOver = false; isAngry = false;
-        document.getElementById('witch').src = FLYING_GIFS[0];
-        document.getElementById('menu').style.display = 'none';
-        document.getElementById('modal-overlay').style.display = 'none';
-        document.getElementById('game-container').style.display = 'flex';
-        pendingMultiplier = getMultiplier(document.getElementById('tabuada-select').value);
-        score = 0; witchY = 60; witchX = 10; witchDirection = 1;
-        document.getElementById('score').innerText = score;
-        let base = [];
-        let type = document.getElementById('tabuada-select').value;
-        if(!isNaN(type)) for(let i=0; i<=12; i++) base.push({n1: parseInt(type), n2: i}); 
-        else {
-            let s = type === 'mista1' ? 0 : 6, e = type === 'mista1' ? 5 : 12;
-            for(let i=s; i<=e; i++) for(let j=0; j<=12; j++) base.push({n1: i, n2: j});
-            base = base.sort(()=>Math.random()-0.5).slice(0, NUMERO_QUESTOES);
+    const VEL_H = 0.45, GRAVIDADE = 0.09, IMPULSO = 10, NUM_QUESTOES_MESTRE = 20;
+
+    window.onload = () => {
+        const sel = document.getElementById('tabuada-select');
+        for(let i=0; i<=12; i++) {
+            let opt = document.createElement('option');
+            opt.value = i; opt.innerText = `Tabuada do ${i}` + (i === 0 ? " (x0.5)" : ` (x${i})`);
+            sel.appendChild(opt);
         }
-        if(document.querySelector('input[name="ordem"]:checked').value === 'rand') base.sort(()=>Math.random()-0.5);
-        questions = base; currentIndex = 0; startTime = Date.now(); 
-        startMechanics(); showQuestion();
+        document.getElementById('btn-start').onclick = startGame;
+        document.getElementById('btn-ranking').onclick = showRankingOnly;
+    };
+
+    // --- Lógica do Jogo ---
+    function startGame() {
+        const type = document.getElementById('tabuada-select').value;
+        const isSeq = document.querySelector('input[name="ordem"]:checked').value === 'seq';
+        
+        gameState = {
+            score: 0, questions: [], currentIndex: 0, witchY: 60, witchX: 10, witchDir: 1,
+            isGameOver: false, currentAnswer: "", canPoint: true,
+            startTime: Date.now(), isJornadaMaster: type === 'master',
+            multiplier: type === 'master' ? 15 : (isNaN(type) ? (type==='mista2'?8:2) : (parseInt(type) === 0 ? 0.5 : parseInt(type)))
+        };
+
+        // Gerar Questões
+        if(type === 'master') {
+            for(let i=0; i<NUM_QUESTOES_MESTRE; i++) gameState.questions.push({n1: Math.floor(Math.random()*13), n2: Math.floor(Math.random()*13)});
+        } else if(!isNaN(type)) {
+            for(let i=0; i<=12; i++) gameState.questions.push({n1: parseInt(type), n2: i});
+        } else {
+            let start = type==='mista1'?0:6, end = type==='mista1'?5:12;
+            for(let i=start; i<=end; i++) for(let j=0; j<=12; j++) gameState.questions.push({n1:i, n2:j});
+            gameState.questions = gameState.questions.sort(()=>Math.random()-0.5).slice(0, 15);
+        }
+
+        if(!isSeq && type !== 'master') gameState.questions.sort(()=>Math.random()-0.5);
+
+        document.getElementById('witch').src = "bruxinha.gif";
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('game-container').style.display = 'flex';
+        document.getElementById('display-score').innerText = "0";
+        if(audioEnabled) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); }
+        
+        startPhysics();
+        showQuestion();
     }
 
     function showQuestion() {
-        if(currentIndex >= questions.length) { handleGameOver(true); return; }
-        currentQ = questions[currentIndex];
-        document.getElementById('question').innerText = `${currentQ.n1} x ${currentQ.n2}`;
-        currentAnswer = ""; document.getElementById('answer-display').innerText = "?";
-        document.getElementById('feedback').innerText = '';
+        if(gameState.currentIndex >= gameState.questions.length) { finish(true); return; }
+        
+        const q = gameState.questions[gameState.currentIndex];
+        document.getElementById('question').innerText = `${q.n1} x ${q.n2}`;
+        document.getElementById('answer-display').innerText = "?";
+        document.getElementById('answer-display').className = "answer-box";
+        document.getElementById('feedback').innerText = "";
+        gameState.currentAnswer = "";
+        gameState.canPoint = true;
     }
 
     function handleNumpad(val) {
-        if (isGameOver || document.getElementById('feedback').innerText !== '') return;
-        if (val === 'DEL') currentAnswer = currentAnswer.slice(0, -1);
-        else if (val === 'ENTER') checkAnswer();
-        else if (currentAnswer.length < 4) currentAnswer += val;
-        document.getElementById('answer-display').innerText = currentAnswer || '?';
+        if(gameState.isGameOver || document.getElementById('feedback').innerText !== "") return;
+        if(val === 'DEL') gameState.currentAnswer = gameState.currentAnswer.slice(0,-1);
+        else if(val === 'ENTER') check();
+        else if(gameState.currentAnswer.length < 4) gameState.currentAnswer += val;
+        document.getElementById('answer-display').innerText = gameState.currentAnswer || "?";
     }
 
-    function checkAnswer() {
-        if (currentAnswer === "") return;
-        let correct = currentQ.n1 * currentQ.n2, fb = document.getElementById('feedback');
-        if(parseInt(currentAnswer) === correct) {
-            score++; document.getElementById('score').innerText = score;
-            fb.innerText = darFeedback('acerto'); fb.style.color = "#39ff14";
-            witchY = Math.min(witchY + IMPULSO_ACERTO, 80);
+    function check() {
+        if(gameState.currentAnswer === "") return;
+        const q = gameState.questions[gameState.currentIndex];
+        const correct = q.n1 * q.n2;
+        const display = document.getElementById('answer-display');
+        const fb = document.getElementById('feedback');
+
+        if(parseInt(gameState.currentAnswer) === correct) {
+            fb.innerText = "MUITO BEM! ✨"; fb.style.color = "var(--neon-green)";
+            
+            // Se acertar e for a primeira tentativa
+            if(gameState.canPoint) {
+                gameState.score += Math.floor(1 * gameState.multiplier);
+                document.getElementById('display-score').innerText = gameState.score;
+            }
+
+            gameState.witchY = Math.min(gameState.witchY + IMPULSO, 80);
+            gameState.currentIndex++;
+            setTimeout(showQuestion, 1200);
         } else {
-            fb.innerText = darFeedback('erro'); fb.style.color = "#ff4444";
-            witchY -= 5; questions.push({...currentQ}); isAngry = true;
-            document.getElementById('witch').src = IMG_BRAVA;
-            clearTimeout(angryTimer); angryTimer = setTimeout(() => { isAngry = false; if(!isGameOver) document.getElementById('witch').src = FLYING_GIFS[0]; }, 3000);
+            fb.innerText = "OPS! OLHA SÓ:"; fb.style.color = "white";
+            display.innerText = correct;
+            display.classList.add('answer-reveal');
+            
+            // Marca que já não vale pontos nesta rodada
+            gameState.canPoint = false; 
+            gameState.witchY -= 5;
+            document.getElementById('witch').src = "bruxinha-brava.gif";
+            
+            // Re-insere no fim da lista para forçar o aluno a responder de novo depois
+            gameState.questions.push({...q}); 
+
+            setTimeout(() => {
+                display.classList.remove('answer-reveal');
+                document.getElementById('witch').src = "bruxinha.gif";
+                gameState.currentIndex++;
+                showQuestion();
+            }, 3000);
         }
-        currentIndex++; setTimeout(showQuestion, 1500);
     }
 
-    function startMechanics() {
-        if(flightInterval) clearInterval(flightInterval);
-        if(spriteInterval) clearInterval(spriteInterval);
-        flightInterval = setInterval(() => {
-            if(isGameOver) return;
-            witchX += (VELOCIDADE_HORIZONTAL * witchDirection);
-            if (witchX >= 85) { witchDirection = -1; document.getElementById('witch').style.transform = "scaleX(-1)"; }
-            else if (witchX <= 5) { witchDirection = 1; document.getElementById('witch').style.transform = "scaleX(1)"; }
-            witchY -= FORCA_GRAVIDADE;
-            document.getElementById('witch').style.left = witchX + '%';
-            document.getElementById('witch').style.bottom = witchY + '%';
-            if(witchY < 5) handleCrash();
-        }, 50);
-        spriteInterval = setInterval(() => { if(!isGameOver && !isAngry) document.getElementById('witch').src = FLYING_GIFS[Math.floor(Math.random() * FLYING_GIFS.length)]; }, 3000);
+    function startPhysics() {
+        const loop = setInterval(() => {
+            if(gameState.isGameOver) { clearInterval(loop); return; }
+            
+            gameState.witchX += (VEL_H * gameState.witchDir);
+            if(gameState.witchX > 85) {
+                gameState.witchDir = -1;
+                document.getElementById('witch').style.transform = "scaleX(-1)";
+            } else if (gameState.witchX < 5) {
+                gameState.witchDir = 1;
+                document.getElementById('witch').style.transform = "scaleX(1)";
+            }
+            
+            gameState.witchY -= GRAVIDADE;
+            document.getElementById('witch').style.left = gameState.witchX + "%";
+            document.getElementById('witch').style.bottom = gameState.witchY + "%";
+
+            if(gameState.witchY < 5) {
+                gameState.isGameOver = true;
+                handleCrash();
+            }
+        }, 30);
     }
 
     function handleCrash() {
-        isGameOver = true; clearInterval(flightInterval); clearInterval(spriteInterval);
-        bgMusic.pause(); document.getElementById('witch').src = IMG_CAIDA; playAudio(sfxCrash);
-        document.getElementById('feedback').innerText = "Oh-ouh!"; document.getElementById('feedback').style.color = "red";
-        setTimeout(() => { handleGameOver(false); }, 2500);
+        bgMusic.pause();
+        if(audioEnabled) sfxCrash.play().catch(e=>{});
+        document.getElementById('witch').src = "bruxinha-caindo.gif";
+        document.getElementById('feedback').innerText = "Oh-ouh!"; 
+        document.getElementById('feedback').style.color = "red";
+        setTimeout(() => finish(false), 2000);
     }
 
-    function handleGameOver(isSuccess) {
-        clearInterval(flightInterval); clearInterval(spriteInterval); bgMusic.pause();
-        pendingTime = (Date.now() - startTime) / 1000; pendingRawScore = score;
-        document.getElementById('highscore-area').style.display = 'block'; 
-        document.getElementById('stats-area').style.display = 'none';
-        document.getElementById('ranking-display').style.display = 'none';
+    function finish(success) {
+        gameState.isGameOver = true;
         document.getElementById('modal-overlay').style.display = 'flex';
-        document.getElementById('modal-title').innerText = isSuccess ? "Fase Concluída!" : "Fim de Jogo!";
-        if(isSuccess) playAudio(sfxWin); else playAudio(sfxLose);
-        document.getElementById('modal-details').innerHTML = `Acertos: ${score}/${NUMERO_QUESTOES}<br>Pontos: ${Math.floor(score * pendingMultiplier)}`;
+        const title = document.getElementById('modal-title');
+        
+        let finalScore = gameState.score;
+
+        // Bónus de Jornada do Mestre Supremo
+        if(success && gameState.isJornadaMaster) {
+            finalScore += 5000;
+            document.getElementById('bonus-badge').style.display = 'block';
+            triggerMasterEffects();
+        }
+
+        gameState.finalCalculatedScore = finalScore;
+        
+        title.innerText = success ? "JORNADA CONCLUÍDA!" : "A BRUXINHA CAIU!";
+        title.style.color = success ? "var(--neon-green)" : "var(--neon-red)";
+        document.getElementById('modal-details').innerHTML = `Pontuação Total: <b>${finalScore}</b><br>Questões Corretas de Primeira: ${gameState.score / gameState.multiplier}`;
+        
+        if(audioEnabled) {
+            success ? sfxWin.play().catch(e=>{}) : sfxLose.play().catch(e=>{});
+        }
     }
 
-    function backToMenu() {
-        document.getElementById('modal-overlay').style.display = 'none';
-        document.getElementById('game-container').style.display = 'none';
-        document.getElementById('menu').style.display = 'flex';
+    function triggerMasterEffects() {
+        const me = document.getElementById('master-effect');
+        me.style.display = 'block';
+        for(let i=0; i<40; i++) {
+            let star = document.createElement('div');
+            star.innerText = ["⭐", "✨", "🎃", "🌟"][Math.floor(Math.random() * 4)];
+            star.style.position = "absolute";
+            star.style.left = Math.random() * 100 + "vw";
+            star.style.top = "-50px";
+            star.style.fontSize = (Math.random() * 20 + 20) + "px";
+            star.style.transition = `top ${Math.random() * 3 + 2}s linear`;
+            document.body.appendChild(star);
+            setTimeout(() => star.style.top = "110vh", 100);
+        }
+    }
+
+    function saveScore() {
+        const name = document.getElementById('player-name').value.trim().toUpperCase() || "BRUXINHA";
+        let ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
+        
+        ranking.push({name, score: gameState.finalCalculatedScore});
+        ranking.sort((a,b) => b.score - a.score);
+        localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking.slice(0, 15)));
+        
+        document.getElementById('highscore-input-area').style.display = 'none';
+        document.getElementById('stats-summary').style.display = 'none';
+        document.getElementById('ranking-view').style.display = 'block';
+        renderTable();
+    }
+
+    function renderTable() {
+        const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
+        const table = document.getElementById('ranking-table');
+        table.innerHTML = "<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>";
+        ranking.forEach((r, i) => {
+            table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td>${r.name}</td><td class="rank-score">${r.score}</td></tr>`;
+        });
+    }
+
+    function showRankingOnly() {
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('modal-overlay').style.display = 'flex';
+        document.getElementById('stats-summary').style.display = 'none';
+        document.getElementById('highscore-input-area').style.display = 'none';
+        document.getElementById('ranking-view').style.display = 'block';
+        renderTable();
     }
 </script>
 </body>
