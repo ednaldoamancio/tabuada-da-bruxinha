@@ -85,7 +85,6 @@
             transition: all 0.3s; pointer-events: none; user-select: none;
         }
         
-        /* ── ALTERAÇÃO 2: pisca em neon vermelho com sombra intensa ── */
         .answer-reveal {
             color: var(--neon-red) !important;
             border-color: var(--neon-red) !important;
@@ -134,8 +133,6 @@
             background: radial-gradient(circle, transparent 30%, rgba(255, 153, 0, 0.2) 100%);
         }
 
-        @keyframes pulse { from { opacity: 1; transform: scale(1); } to { opacity: 0.7; transform: scale(1.05); } }
-        
         .ranking-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 1.8vh; }
         .ranking-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .rank-pos { color: var(--hw-orange); font-weight: bold; }
@@ -214,7 +211,6 @@
                     style="padding:10px; border-radius:10px; border:2px solid var(--neon-green);
                            background:black; color:white; text-align:center; font-size: 2vh; text-transform: uppercase;">
                 <br>
-                <!-- dica visual para o usuário de PC -->
                 <p style="font-size:1.6vh; color:#aaa; margin: 6px 0 0;">
                     💡 PC: pressione <kbd style="background:#333; padding:2px 6px; border-radius:4px; border:1px solid #666;">Enter</kbd> para salvar
                 </p>
@@ -231,7 +227,6 @@
 </div>
 
 <script>
-    // --- Configurações Iniciais ---
     const video = document.getElementById('bg-video');
     video.addEventListener('timeupdate', function() { 
         if(this.currentTime > this.duration - 0.15) {
@@ -244,14 +239,14 @@
     const bgMusic = new Audio('musica.mp3'); bgMusic.loop = true; bgMusic.volume = 0.5;
     const sfxWin = new Audio('vitoria.mp3'), sfxLose = new Audio('derrota.mp3'), sfxCrash = new Audio('crash.mp3');
 
-    // ── ALTERAÇÃO 1: Enter no campo de nome salva o placar (mantido)
-    // ── ALTERAÇÃO ESPECIAL: Enter no MENU inicial inicia o jogo!
+    // CORREÇÃO PRINCIPAL: evento de teclado robusto com preventDefault e foco
     document.addEventListener('keydown', (event) => {
         const modalVisible  = document.getElementById('modal-overlay').style.display === 'flex';
         const nameVisible   = document.getElementById('highscore-input-area').style.display !== 'none';
         const menuVisible = document.getElementById('menu').style.display === 'flex';
+        const gameVisible = document.getElementById('game-container').style.display === 'flex';
 
-        // NOVO: Se o menu está visível e pressionou Enter, inicia a missão
+        // ENTER no menu inicial
         if (menuVisible && event.key === 'Enter') {
             event.preventDefault();
             const startBtn = document.getElementById('btn-start');
@@ -259,24 +254,28 @@
             return;
         }
 
-        if (modalVisible && nameVisible) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                saveScore();
-            }
+        // ENTER no modal para salvar pontuação
+        if (modalVisible && nameVisible && event.key === 'Enter') {
+            event.preventDefault();
+            saveScore();
             return;
         }
 
-        // Bloqueia comandos numéricos fora do jogo
-        if (document.getElementById('game-container').style.display !== 'flex') return;
-
-        const key = event.key;
-        if (key >= '0' && key <= '9') {
-            handleNumpad(key);
-        } else if (key === 'Enter') {
+        // DURANTE O JOGO: Enter confirma a resposta (funciona para qualquer tabuada)
+        if (gameVisible && event.key === 'Enter') {
+            event.preventDefault();   // evita comportamento estranho do navegador
             handleNumpad('ENTER');
-        } else if (key === 'Backspace') {
-            handleNumpad('DEL');
+            return;
+        }
+
+        // Teclas numéricas e backspace durante o jogo
+        if (gameVisible) {
+            const key = event.key;
+            if (key >= '0' && key <= '9') {
+                handleNumpad(key);
+            } else if (key === 'Backspace') {
+                handleNumpad('DEL');
+            }
         }
     });
 
@@ -302,7 +301,6 @@
         }
     }
 
-    // --- Variáveis de Estado ---
     let gameState = {
         score: 0,
         questions: [],
@@ -332,7 +330,6 @@
         document.getElementById('btn-ranking').onclick = showRankingOnly;
     };
 
-    // --- Lógica do Jogo ---
     function startGame() {
         const type = document.getElementById('tabuada-select').value;
         const isSeq = document.querySelector('input[name="ordem"]:checked').value === 'seq';
@@ -361,6 +358,10 @@
         document.getElementById('menu').style.display = 'none';
         document.getElementById('game-container').style.display = 'flex';
         document.getElementById('display-score').innerText = "0";
+        
+        // FORÇA O FOCO PARA O BODY - GARANTE QUE O ENTER SEJA CAPTURADO
+        document.body.focus();
+        
         if(audioEnabled) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); }
         
         startPhysics();
@@ -506,17 +507,15 @@
         }
     }
 
-    // ========== NOVA FUNÇÃO: SALVAR COM ACUMULAÇÃO POR NOME ==========
+    // Acumulação de pontuação por nome (já implementada)
     function saveScore() {
         let rawName = document.getElementById('player-name').value.trim();
         if (rawName === "") rawName = "BRUXINHA";
         const playerName = rawName.toUpperCase();
         const currentScore = gameState.finalCalculatedScore;
         
-        // Carrega ranking atual
         let ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         
-        // Procura se já existe entrada com exatamente o mesmo nome
         let existingIndex = -1;
         for (let i = 0; i < ranking.length; i++) {
             if (ranking[i].name === playerName) {
@@ -526,21 +525,16 @@
         }
         
         if (existingIndex !== -1) {
-            // ACUMULA: soma a pontuação atual à pontuação existente
             ranking[existingIndex].score += currentScore;
         } else {
-            // Novo jogador: adiciona normalmente
             ranking.push({ name: playerName, score: currentScore });
         }
         
-        // Ordena do maior para o menor e mantém apenas top 15
         ranking.sort((a, b) => b.score - a.score);
         if (ranking.length > 15) ranking = ranking.slice(0, 15);
         
-        // Salva no localStorage
         localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking));
         
-        // Esconde área de entrada e exibe ranking atualizado
         document.getElementById('highscore-input-area').style.display = 'none';
         document.getElementById('stats-summary').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'block';
