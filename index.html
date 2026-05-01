@@ -215,9 +215,9 @@
             </div>
             <div id="ranking-view" style="display:none;">
                 <h3 style="color:var(--hw-orange)">🏆 CLASSIFICAÇÃO GERAL 🏆</h3>
-                <table class="ranking-table" id="ranking-table"><tr>
+                <table class="ranking-table" id="ranking-table"></table>
                 <br>
-                <button class="btn" onclick="location.reload()">VOLTAR AO INÍCIO</button>
+                <button class="btn" id="btn-return-to-menu" onclick="returnToMenu()">VOLTAR AO INÍCIO</button>
             </div>
         </div>
     </div>
@@ -238,7 +238,6 @@
     const sfxLose = new Audio('derrota.mp3');
     const sfxCrash = new Audio('crash.mp3');
 
-    // ========== NOVOS SONS DE ACERTO E ERRO ==========
     const correctSounds = [
         new Audio('beleza.mp3'),
         new Audio('muitobem.mp3'),
@@ -269,12 +268,15 @@
         sound.play().catch(e => console.log("Erro ao tocar som de erro:", e));
     }
 
+    // Evento de teclado global
     document.addEventListener('keydown', (event) => {
         const modalVisible  = document.getElementById('modal-overlay').style.display === 'flex';
         const nameVisible   = document.getElementById('highscore-input-area').style.display !== 'none';
+        const rankingVisible = document.getElementById('ranking-view').style.display === 'block';
         const menuVisible = document.getElementById('menu').style.display === 'flex';
         const gameVisible = document.getElementById('game-container').style.display === 'flex';
 
+        // ENTER no menu inicial
         if (menuVisible && event.key === 'Enter') {
             event.preventDefault();
             const startBtn = document.getElementById('btn-start');
@@ -282,18 +284,28 @@
             return;
         }
 
-        if (modalVisible && nameVisible && event.key === 'Enter') {
-            event.preventDefault();
-            saveScore();
-            return;
+        // ENTER na modal: se campo nome visível -> salvar; se ranking visível -> voltar ao início
+        if (modalVisible) {
+            if (nameVisible && event.key === 'Enter') {
+                event.preventDefault();
+                saveScore();
+                return;
+            }
+            if (rankingVisible && event.key === 'Enter') {
+                event.preventDefault();
+                returnToMenu();
+                return;
+            }
         }
 
+        // Durante o jogo: Enter confirma resposta
         if (gameVisible && event.key === 'Enter') {
             event.preventDefault();
             handleNumpad('ENTER');
             return;
         }
 
+        // Teclas numéricas e backspace durante o jogo
         if (gameVisible) {
             const key = event.key;
             if (key >= '0' && key <= '9') {
@@ -464,9 +476,7 @@
         const fb = document.getElementById('feedback');
 
         if(parseInt(gameState.currentAnswer) === correct) {
-            // Tocar som de acerto aleatório
             playRandomCorrectSound();
-
             let earnedPoints = false;
             if(!q.failed && !q.pointsEarned) {
                 let gain = Math.floor(1 * gameState.multiplier);
@@ -487,9 +497,7 @@
             gameState.canAttempt = false;
             setTimeout(() => showQuestion(), 1200);
         } else {
-            // Tocar som de erro aleatório
             playRandomErrorSound();
-
             gameState.totalErrors++;
             fb.innerText = "OPS! OLHA SÓ:"; fb.style.color = "white";
             q.failed = true;
@@ -574,6 +582,11 @@
         gameState.finalCalculatedScore = finalScore;
         
         document.getElementById('modal-overlay').style.display = 'flex';
+        // Esconde ranking-view e mostra highscore-input-area inicialmente
+        document.getElementById('ranking-view').style.display = 'none';
+        document.getElementById('highscore-input-area').style.display = 'block';
+        document.getElementById('stats-summary').style.display = 'block';
+        
         const title = document.getElementById('modal-title');
         title.innerText = success ? "JORNADA CONCLUÍDA!" : "A BRUXINHA CAIU!";
         title.style.color = success ? "var(--neon-green)" : "var(--neon-red)";
@@ -584,6 +597,11 @@
         summaryText += `<strong>Total: ${finalScore}</strong><br>`;
         summaryText += `Erros cometidos: ${gameState.totalErrors}`;
         document.getElementById('modal-details').innerHTML = summaryText;
+        
+        // Foco automático no campo de nome
+        const nameInput = document.getElementById('player-name');
+        nameInput.value = ""; // limpa campo anterior
+        nameInput.focus();
         
         if(audioEnabled) {
             success ? sfxWin.play().catch(e=>{}) : sfxLose.play().catch(e=>{});
@@ -635,6 +653,7 @@
         document.getElementById('stats-summary').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'block';
         renderTable();
+        // Opcional: foco no botão de voltar? Não necessário, mas Enter já capturado.
     }
 
     function renderTable() {
@@ -661,6 +680,23 @@
         document.getElementById('highscore-input-area').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'block';
         renderTable();
+    }
+
+    // NOVA FUNÇÃO: retorna ao menu SEM recarregar a página (mantém fullscreen)
+    function returnToMenu() {
+        // Para a música de fundo se estiver tocando
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        
+        // Esconde a modal e mostra o menu
+        document.getElementById('modal-overlay').style.display = 'none';
+        document.getElementById('menu').style.display = 'flex';
+        document.getElementById('game-container').style.display = 'none';
+        
+        // Reseta variáveis globais (opcional, mas startGame fará isso novamente)
+        // Não precisa reiniciar o vídeo de fundo nem o fullscreen.
+        // O foco volta para o body para evitar teclas indesejadas
+        document.body.focus();
     }
 </script>
 </body>
