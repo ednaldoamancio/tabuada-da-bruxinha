@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tabuada da Bruxinha - Verificação Automática</title>
+    <title>Tabuada da Bruxinha - Conquistas Individuais</title>
     <style>
+        /* (mesmos estilos anteriores, sem alterações) */
         :root { 
             --hw-orange: #ff9900; 
             --hw-purple: #2e0249; 
@@ -291,7 +292,7 @@
         relampago: { name: "⚡ Relâmpago", desc: "Responder 5 questões em menos de 3s cada (média)", unlocked: false, date: null },
         resiliente: { name: "💪 Resiliente", desc: "Errar a mesma questão 2 vezes e depois acertar", unlocked: false, date: null },
         mestre_supremo: { name: "🦉 Mestre Supremo", desc: "Completar a Jornada Mestre sem erros", unlocked: false, date: null },
-        lendaria: { name: "👑 Lendária", desc: "Acumular 50.000 pontos no total (ranking global)", unlocked: false, date: null, progress: 0, needed: 50000 },
+        lendaria: { name: "👑 Lendária", desc: "Acumular 50.000 pontos no total (pontuação individual)", unlocked: false, date: null, progress: 0, needed: 50000 },
         fa_audio: { name: "🔊 Fã de Áudio", desc: "Jogar 10 partidas com som ligado", unlocked: false, date: null },
         noturna: { name: "🌙 Noturna", desc: "Completar uma partida no modo noturno", unlocked: false, date: null },
         mestra_completa: { name: "🎓 Mestra Completa", desc: "Desbloquear todas as outras conquistas", unlocked: false, date: null }
@@ -377,11 +378,12 @@
         saveAchievementsForPlayer(playerName, ach);
     }
 
-    function updateLendariaProgress(playerName, globalTotal) {
+    // Função corrigida: agora o progresso é baseado nos pontos individuais do jogador (passados como parâmetro)
+    function updateLendariaProgress(playerName, playerTotalPoints) {
         if (!playerName) return;
         let ach = getAchievementsForPlayer(playerName);
-        ach.lendaria.progress = globalTotal;
-        if (globalTotal >= ach.lendaria.needed && !ach.lendaria.unlocked) {
+        ach.lendaria.progress = playerTotalPoints;
+        if (playerTotalPoints >= ach.lendaria.needed && !ach.lendaria.unlocked) {
             ach.lendaria.unlocked = true;
             ach.lendaria.date = new Date().toISOString();
             if (audioEnabled) {
@@ -599,7 +601,6 @@
         gameState.questionStartTime = Date.now();
     }
 
-    // Função auxiliar para obter o número de dígitos da resposta correta
     function getDigitsOfCorrectAnswer() {
         if (gameState.currentIndex >= gameState.questions.length) return 1;
         const q = gameState.questions[gameState.currentIndex];
@@ -621,13 +622,11 @@
             return;
         }
         
-        // Adiciona dígito
         if(gameState.currentAnswer.length < 4) {
             gameState.currentAnswer += val;
             document.getElementById('answer-display').innerText = gameState.currentAnswer;
         }
         
-        // Verifica se o número de dígitos digitados atingiu o número de dígitos da resposta correta
         const digitsNeeded = getDigitsOfCorrectAnswer();
         if (gameState.currentAnswer.length === digitsNeeded) {
             check();
@@ -792,6 +791,13 @@
         }
     }
 
+    // Função para obter o total de pontos individuais de um jogador no ranking
+    function getPlayerTotalPoints(playerName) {
+        const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
+        const entry = ranking.find(r => r.name === playerName);
+        return entry ? entry.score : 0;
+    }
+
     function saveScore() {
         const currentScore = gameState.finalCalculatedScore;
         let ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
@@ -808,8 +814,8 @@
         if (ranking.length > 15) ranking = ranking.slice(0, 15);
         localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking));
         
-        let playerTotal = 0;
-        ranking.forEach(entry => { if (entry.name === currentPlayerName) playerTotal = entry.score; });
+        // Atualiza conquista lendária com os pontos TOTAIS do jogador (após somar)
+        const playerTotal = getPlayerTotalPoints(currentPlayerName);
         updateLendariaProgress(currentPlayerName, playerTotal);
         
         document.getElementById('highscore-input-area').style.display = 'none';
@@ -859,6 +865,8 @@
         const ach = getAchievementsForPlayer(playerName);
         const table = document.getElementById('achievements-table');
         table.innerHTML = `<tr><th>CONQUISTA</th><th>STATUS</th></tr>`;
+        // Para exibir o progresso correto da Lendária, obtemos os pontos individuais do jogador no ranking
+        const playerTotalPoints = getPlayerTotalPoints(playerName);
         for (let key in ach) {
             const a = ach[key];
             let statusText = a.unlocked ? '✅ DESBLOQUEADA' : '🔒 BLOQUEADA';
@@ -866,7 +874,10 @@
             if (key === 'varredeira' && !a.unlocked) {
                 extra = `<div class="achieve-progress">Progresso: ${a.progress}/${a.needed} tabuadas perfeitas</div>`;
             } else if (key === 'lendaria') {
-                extra = `<div class="achieve-progress">Pontos totais: ${a.progress}/${a.needed}</div>`;
+                // Usamos o total de pontos do jogador (individual) para mostrar o progresso
+                const progress = playerTotalPoints;
+                if (!a.unlocked) extra = `<div class="achieve-progress">Progresso: ${progress}/${a.needed} pontos</div>`;
+                else extra = `<div class="achieve-progress">Total acumulado: ${progress} pontos</div>`;
             }
             const colorClass = a.unlocked ? 'achieve-unlocked' : 'achieve-locked';
             table.innerHTML += `<tr><td class="achieve-name">${a.name}<br><span style="font-size:1.4vh;">${a.desc}</span>${extra}</td><td class="${colorClass}">${statusText}</td></tr>`;
@@ -911,7 +922,7 @@
         else bgMusic.pause();
     }
 
-    // Eventos de teclado físico também com verificação automática
+    // Eventos de teclado
     document.addEventListener('keydown', (event) => {
         const modalVisible = document.getElementById('modal-overlay').style.display === 'flex';
         const rankingVisible = document.getElementById('ranking-view').style.display === 'block';
