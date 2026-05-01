@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tabuada da Bruxinha - Enter no Botão Salvar</title>
+    <title>Tabuada da Bruxinha - Ranking e Conquistas</title>
     <style>
-        /* (mesmos estilos anteriores, sem alterações) */
         :root { 
             --hw-orange: #ff9900; 
             --hw-purple: #2e0249; 
@@ -261,10 +260,11 @@
             </div>
             <div id="ranking-view" style="display:none;">
                 <h3 style="color:var(--hw-orange)">🏆 CLASSIFICAÇÃO GERAL 🏆</h3>
-                <table class="ranking-table" id="ranking-table"><table>
+                <table class="ranking-table" id="ranking-table"></table>
                 <br>
                 <button class="btn" onclick="showPlayerList()">VER CONQUISTAS DOS JOGADORES</button>
                 <button class="btn" onclick="returnToMenu()">VOLTAR AO INÍCIO</button>
+                <button class="btn" onclick="backToMenuFromRanking()">MENU PRINCIPAL</button>
             </div>
             <div id="players-list-view" style="display:none;">
                 <h3 style="color:var(--hw-orange)">👥 ESCOLHA UM JOGADOR</h3>
@@ -275,7 +275,7 @@
             </div>
             <div id="achievements-view" style="display:none;">
                 <h3 id="achievements-player-name" style="color:var(--hw-orange)">🏅 CONQUISTAS</h3>
-                <table class="achievements-table" id="achievements-table"></tr>
+                <table class="achievements-table" id="achievements-table"><table>
                 <br>
                 <button class="btn" onclick="showPlayerList()">◀ VOLTAR PARA JOGADORES</button>
             </div>
@@ -284,7 +284,7 @@
 </div>
 
 <script>
-    // ==================== SISTEMA DE CONQUISTAS POR JOGADOR ====================
+    // ==================== CONQUISTAS POR JOGADOR ====================
     const defaultAchievements = {
         iniciante: { name: "🌟 Iniciante", desc: "Complete sua primeira partida", unlocked: false, date: null },
         perfeicao: { name: "🎯 Perfeição", desc: "Complete uma tabuada normal sem erros", unlocked: false, date: null },
@@ -334,7 +334,7 @@
             if (showToast && audioEnabled) {
                 showAchievementToast(ach[id].name);
                 const conquerSound = new Audio('conquista.mp3');
-                conquerSound.play().catch(e=>console.log("sem som de conquista"));
+                conquerSound.play().catch(e=>console.log("audio"));
             }
             let allUnlocked = true;
             for (let k in ach) {
@@ -403,7 +403,7 @@
         setTimeout(() => toast.remove(), 5000);
     }
 
-    // ==================== ÁUDIO, VÍDEO E UTILITÁRIOS ====================
+    // ==================== ÁUDIO E VÍDEO ====================
     const video = document.getElementById('bg-video');
     video.addEventListener('timeupdate', function() { 
         if(this.currentTime > this.duration - 0.15) {
@@ -437,7 +437,7 @@
         const randomIndex = Math.floor(Math.random() * correctSounds.length);
         const sound = correctSounds[randomIndex];
         sound.currentTime = 0;
-        sound.play().catch(e => console.log("Erro ao tocar som de acerto:", e));
+        sound.play().catch(e => console.log("erro som acerto", e));
     }
 
     function playRandomErrorSound() {
@@ -445,10 +445,10 @@
         const randomIndex = Math.floor(Math.random() * errorSounds.length);
         const sound = errorSounds[randomIndex];
         sound.currentTime = 0;
-        sound.play().catch(e => console.log("Erro ao tocar som de erro:", e));
+        sound.play().catch(e => console.log("erro som erro", e));
     }
 
-    // ==================== JOGO E ESTATÍSTICAS ====================
+    // ==================== JOGO ====================
     let currentPlayerName = "";
     let gameState = {
         score: 0,
@@ -489,6 +489,7 @@
     ];
 
     window.onload = () => {
+        console.log("Inicializando...");
         const select = document.getElementById('tabuada-select');
         select.innerHTML = '';
         opcoesOrdenadas.forEach(opt => {
@@ -506,9 +507,18 @@
             currentPlayerName = nameInput;
             startGame();
         };
-        document.getElementById('btn-ranking').onclick = showRankingOnly;
-        document.getElementById('btn-achievements').onclick = showPlayerList;
+        document.getElementById('btn-ranking').onclick = () => {
+            console.log("Botão RANKING clicado");
+            showRankingOnly();
+        };
+        document.getElementById('btn-achievements').onclick = () => {
+            console.log("Botão CONQUISTAS clicado");
+            showPlayerList();
+        };
         loadGlobalStats();
+        // Verifica se há dados no localStorage
+        const test = localStorage.getItem('ranking_bruxinha_mestre');
+        console.log("Dados iniciais do ranking:", test);
     };
 
     function loadGlobalStats() {
@@ -771,7 +781,6 @@
         summaryText += `Erros cometidos: ${gameState.totalErrors}`;
         document.getElementById('modal-details').innerHTML = summaryText;
         
-        // Foca no botão de salvar para permitir Enter direto
         setTimeout(() => {
             const saveBtn = document.getElementById('save-score-btn');
             if (saveBtn) saveBtn.focus();
@@ -828,14 +837,27 @@
     }
 
     function renderRankingTable() {
+        console.log("Renderizando tabela de ranking");
         const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         const table = document.getElementById('ranking-table');
-        table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
-        if (ranking.length === 0) table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum feiticeiro ainda ✨</td></tr>`;
-        else ranking.forEach((r, i) => { table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td class="player-name clickable-name" onclick="showAchievementsForPlayer('${r.name}')">${r.name}</td><td class="rank-score">${r.score}</td></tr>`; });
+        if (!table) return;
+        table.innerHTML = `<table><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
+        if (ranking.length === 0) {
+            table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum feiticeiro ainda ✨</td></tr>`;
+        } else {
+            ranking.forEach((r, i) => {
+                table.innerHTML += `<tr>
+                    <td class="rank-pos">${i+1}º</td>
+                    <td class="player-name clickable-name" onclick="showAchievementsForPlayer('${r.name}')">${r.name}</td>
+                    <td class="rank-score">${r.score}</td>
+                </tr>`;
+            });
+        }
+        console.log("Ranking carregado:", ranking);
     }
 
     function showRankingOnly() {
+        console.log("Exibindo tela de ranking");
         document.getElementById('menu').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'flex';
         document.getElementById('stats-summary').style.display = 'none';
@@ -848,13 +870,22 @@
     }
 
     function showPlayerList() {
+        console.log("Exibindo lista de jogadores");
         const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         const table = document.getElementById('players-table');
+        if (!table) return;
         table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS TOTAIS</th></tr>`;
-        if (ranking.length === 0) table.innerHTML += `<tr><td colspan="3">Nenhum jogador ainda</td></tr>`;
-        else ranking.forEach((r, i) => {
-            table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td class="player-name clickable-name" onclick="showAchievementsForPlayer('${r.name}')">${r.name}</td><td class="rank-score">${r.score}</td></tr>`;
-        });
+        if (ranking.length === 0) {
+            table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum jogador ainda ✨</td></tr>`;
+        } else {
+            ranking.forEach((r, i) => {
+                table.innerHTML += `<tr>
+                    <td class="rank-pos">${i+1}º</td>
+                    <td class="player-name clickable-name" onclick="showAchievementsForPlayer('${r.name}')">${r.name}</td>
+                    <td class="rank-score">${r.score}</td>
+                </tr>`;
+            });
+        }
         document.getElementById('modal-overlay').style.display = 'flex';
         document.getElementById('ranking-view').style.display = 'none';
         document.getElementById('players-list-view').style.display = 'block';
@@ -865,8 +896,10 @@
     }
 
     function showAchievementsForPlayer(playerName) {
+        console.log("Exibindo conquistas de", playerName);
         const ach = getAchievementsForPlayer(playerName);
         const table = document.getElementById('achievements-table');
+        if (!table) return;
         table.innerHTML = `<tr><th>CONQUISTA</th><th>STATUS</th></tr>`;
         const playerTotalPoints = getPlayerTotalPoints(playerName);
         for (let key in ach) {
@@ -881,7 +914,7 @@
                 else extra = `<div class="achieve-progress">Total acumulado: ${progress} pontos</div>`;
             }
             const colorClass = a.unlocked ? 'achieve-unlocked' : 'achieve-locked';
-            table.innerHTML += `<tr><td class="achieve-name">${a.name}<br><span style="font-size:1.4vh;">${a.desc}</span>${extra}</td><td class="${colorClass}">${statusText}</td></table>`;
+            table.innerHTML += `<tr><td class="achieve-name">${a.name}<br><span style="font-size:1.4vh;">${a.desc}</span>${extra}</td><td class="${colorClass}">${statusText}</td></tr>`;
         }
         document.getElementById('achievements-player-name').innerHTML = `🏅 CONQUISTAS DE ${playerName}`;
         document.getElementById('players-list-view').style.display = 'none';
@@ -891,6 +924,7 @@
     }
 
     function backToRanking() {
+        console.log("Voltando ao ranking");
         document.getElementById('players-list-view').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'block';
         document.getElementById('achievements-view').style.display = 'none';
@@ -898,7 +932,12 @@
         renderRankingTable();
     }
 
+    function backToMenuFromRanking() {
+        returnToMenu();
+    }
+
     function returnToMenu() {
+        console.log("Retornando ao menu principal");
         bgMusic.pause();
         bgMusic.currentTime = 0;
         document.getElementById('modal-overlay').style.display = 'none';
@@ -923,7 +962,7 @@
         else bgMusic.pause();
     }
 
-    // Evento de teclado global
+    // Evento de teclado
     document.addEventListener('keydown', (event) => {
         const modalVisible = document.getElementById('modal-overlay').style.display === 'flex';
         const nameVisible = document.getElementById('highscore-input-area').style.display !== 'none';
@@ -939,7 +978,6 @@
             return;
         }
         if (modalVisible) {
-            // Salvar ranking com Enter
             if (nameVisible && event.key === 'Enter') {
                 event.preventDefault();
                 saveScore();
@@ -957,7 +995,7 @@
             }
             if (achievementsVisible && event.key === 'Enter') {
                 event.preventDefault();
-                backToRanking();
+                showPlayerList();
                 return;
             }
         }
