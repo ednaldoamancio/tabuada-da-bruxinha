@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tabuada da Bruxinha - Mestre Supremo com Conquistas</title>
     <style>
-        /* (mantenha todos os estilos anteriores, sem alterações) */
         :root { 
             --hw-orange: #ff9900; 
             --hw-purple: #2e0249; 
@@ -252,7 +251,7 @@
             </div>
             <div id="ranking-view" style="display:none;">
                 <h3 style="color:var(--hw-orange)">🏆 CLASSIFICAÇÃO GERAL 🏆</h3>
-                <table class="ranking-table" id="ranking-table"><table>
+                <table class="ranking-table" id="ranking-table"></table>
                 <br>
                 <button class="btn" id="btn-return-to-menu" onclick="returnToMenu()">VOLTAR AO INÍCIO</button>
             </div>
@@ -846,7 +845,7 @@
     function renderTable() {
         const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         const table = document.getElementById('ranking-table');
-        table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
+        table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS</th><tr>`;
         if (ranking.length === 0) table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum feiticeiro ainda ✨</td></tr>`;
         else ranking.forEach((r, i) => { table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td>${r.name}</td><td class="rank-score">${r.score}</td></tr>`; });
     }
@@ -865,18 +864,20 @@
     function showAchievementsOnly() {
         document.getElementById('menu').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'flex';
-        // Esconde todas as outras seções e mostra apenas conquistas
+        // Esconde todas as outras seções
         document.getElementById('stats-summary').style.display = 'none';
         document.getElementById('highscore-input-area').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'none';
         document.getElementById('achievements-view').style.display = 'block';
         document.getElementById('modal-title').innerText = "🏅 CONQUISTAS";
+        // Garante que a tabela seja preenchida
         renderAchievements();
     }
 
     function renderAchievements() {
         const table = document.getElementById('achievements-table');
-        table.innerHTML = `<table><th>CONQUISTA</th><th>STATUS</th></tr>`;
+        if (!table) return;
+        table.innerHTML = `<tr><th>CONQUISTA</th><th>STATUS</th></tr>`;
         for (let key in achievements) {
             const a = achievements[key];
             let statusText = a.unlocked ? '✅ DESBLOQUEADA' : '🔒 BLOQUEADA';
@@ -884,7 +885,7 @@
             if (key === 'varredeira' && !a.unlocked) {
                 extra = `<div class="achieve-progress">Progresso: ${a.progress}/${a.needed} tabuadas perfeitas</div>`;
             } else if (key === 'lendaria') {
-                const globalTotal = getGlobalTotalPoints();
+                const globalTotal = getGlobalTotalPoints(); // atualiza sempre que abre
                 if (!a.unlocked) extra = `<div class="achieve-progress">Progresso: ${globalTotal}/${a.needed} pontos</div>`;
                 else extra = `<div class="achieve-progress">Total acumulado: ${globalTotal} pontos</div>`;
             }
@@ -900,7 +901,6 @@
         document.getElementById('achievements-view').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'none';
         document.getElementById('menu').style.display = 'flex';
-        // Limpa o título do modal para o próximo uso
         document.getElementById('modal-title').innerText = "Fim de Jogo";
     }
 
