@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tabuada da Bruxinha - Conquistas por Jogador</title>
+    <title>Tabuada da Bruxinha - Verificação Automática</title>
     <style>
         :root { 
             --hw-orange: #ff9900; 
@@ -283,7 +283,7 @@
 </div>
 
 <script>
-    // ==================== ESTRUTURA DE CONQUISTAS PADRÃO ====================
+    // ==================== SISTEMA DE CONQUISTAS POR JOGADOR ====================
     const defaultAchievements = {
         iniciante: { name: "🌟 Iniciante", desc: "Complete sua primeira partida", unlocked: false, date: null },
         perfeicao: { name: "🎯 Perfeição", desc: "Complete uma tabuada normal sem erros", unlocked: false, date: null },
@@ -297,14 +297,12 @@
         mestra_completa: { name: "🎓 Mestra Completa", desc: "Desbloquear todas as outras conquistas", unlocked: false, date: null }
     };
 
-    // Armazenamento de conquistas por jogador
     function getAchievementsForPlayer(playerName) {
         const key = `bruxinha_achievements_${playerName.toUpperCase()}`;
         const saved = localStorage.getItem(key);
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                // Mescla com default para garantir que novas conquistas existam
                 const merged = { ...defaultAchievements };
                 for (let a in data) {
                     if (merged[a]) {
@@ -337,7 +335,6 @@
                 const conquerSound = new Audio('conquista.mp3');
                 conquerSound.play().catch(e=>console.log("sem som de conquista"));
             }
-            // Verifica Mestra Completa para este jogador
             let allUnlocked = true;
             for (let k in ach) {
                 if (k !== 'mestra_completa' && !ach[k].unlocked) {
@@ -396,6 +393,15 @@
         saveAchievementsForPlayer(playerName, ach);
     }
 
+    function showAchievementToast(achieveName) {
+        const toastArea = document.getElementById('toast-area');
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.innerHTML = `<span>🏅</span> CONQUISTA DESBLOQUEADA!<br>${achieveName}`;
+        toastArea.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
     // ==================== ÁUDIO, VÍDEO E UTILITÁRIOS ====================
     const video = document.getElementById('bg-video');
     video.addEventListener('timeupdate', function() { 
@@ -439,15 +445,6 @@
         const sound = errorSounds[randomIndex];
         sound.currentTime = 0;
         sound.play().catch(e => console.log("Erro ao tocar som de erro:", e));
-    }
-
-    function showAchievementToast(achieveName) {
-        const toastArea = document.getElementById('toast-area');
-        const toast = document.createElement('div');
-        toast.className = 'toast-notification';
-        toast.innerHTML = `<span>🏅</span> CONQUISTA DESBLOQUEADA!<br>${achieveName}`;
-        toastArea.appendChild(toast);
-        setTimeout(() => toast.remove(), 5000);
     }
 
     // ==================== JOGO E ESTATÍSTICAS ====================
@@ -602,12 +599,39 @@
         gameState.questionStartTime = Date.now();
     }
 
+    // Função auxiliar para obter o número de dígitos da resposta correta
+    function getDigitsOfCorrectAnswer() {
+        if (gameState.currentIndex >= gameState.questions.length) return 1;
+        const q = gameState.questions[gameState.currentIndex];
+        const correct = q.n1 * q.n2;
+        return String(correct).length;
+    }
+
     function handleNumpad(val) {
         if(gameState.isGameOver || !gameState.canAttempt) return;
-        if(val === 'DEL') gameState.currentAnswer = gameState.currentAnswer.slice(0,-1);
-        else if(val === 'ENTER') check();
-        else if(gameState.currentAnswer.length < 4) gameState.currentAnswer += val;
-        document.getElementById('answer-display').innerText = gameState.currentAnswer || "?";
+        
+        if(val === 'DEL') {
+            gameState.currentAnswer = gameState.currentAnswer.slice(0,-1);
+            document.getElementById('answer-display').innerText = gameState.currentAnswer || "?";
+            return;
+        }
+        
+        if(val === 'ENTER') {
+            check();
+            return;
+        }
+        
+        // Adiciona dígito
+        if(gameState.currentAnswer.length < 4) {
+            gameState.currentAnswer += val;
+            document.getElementById('answer-display').innerText = gameState.currentAnswer;
+        }
+        
+        // Verifica se o número de dígitos digitados atingiu o número de dígitos da resposta correta
+        const digitsNeeded = getDigitsOfCorrectAnswer();
+        if (gameState.currentAnswer.length === digitsNeeded) {
+            check();
+        }
     }
 
     function check() {
@@ -784,7 +808,6 @@
         if (ranking.length > 15) ranking = ranking.slice(0, 15);
         localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking));
         
-        // Atualiza conquista lendária baseada no total de pontos do jogador (soma dos scores dele)
         let playerTotal = 0;
         ranking.forEach(entry => { if (entry.name === currentPlayerName) playerTotal = entry.score; });
         updateLendariaProgress(currentPlayerName, playerTotal);
@@ -818,7 +841,7 @@
     function showPlayerList() {
         const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         const table = document.getElementById('players-table');
-        table.innerHTML = `<table><th>#</th><th>NOME</th><th>PONTOS TOTAIS</th></tr>`;
+        table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS TOTAIS</th></tr>`;
         if (ranking.length === 0) table.innerHTML += `<tr><td colspan="3">Nenhum jogador ainda</td></tr>`;
         else ranking.forEach((r, i) => {
             table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td class="player-name clickable-name" onclick="showAchievementsForPlayer('${r.name}')">${r.name}</td><td class="rank-score">${r.score}</td></tr>`;
@@ -888,7 +911,7 @@
         else bgMusic.pause();
     }
 
-    // Eventos de teclado
+    // Eventos de teclado físico também com verificação automática
     document.addEventListener('keydown', (event) => {
         const modalVisible = document.getElementById('modal-overlay').style.display === 'flex';
         const rankingVisible = document.getElementById('ranking-view').style.display === 'block';
@@ -907,11 +930,18 @@
             if (playersVisible && event.key === 'Enter') { event.preventDefault(); returnToMenu(); return; }
             if (achievementsVisible && event.key === 'Enter') { event.preventDefault(); backToRanking(); return; }
         }
-        if (gameVisible && event.key === 'Enter') { event.preventDefault(); handleNumpad('ENTER'); return; }
         if (gameVisible) {
             const key = event.key;
-            if (key >= '0' && key <= '9') handleNumpad(key);
-            else if (key === 'Backspace') handleNumpad('DEL');
+            if (key >= '0' && key <= '9') {
+                event.preventDefault();
+                handleNumpad(key);
+            } else if (key === 'Enter') {
+                event.preventDefault();
+                handleNumpad('ENTER');
+            } else if (key === 'Backspace') {
+                event.preventDefault();
+                handleNumpad('DEL');
+            }
         }
     });
 </script>
