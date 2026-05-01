@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tabuada da Bruxinha - Mestre Supremo com Conquistas</title>
     <style>
+        /* (mantenha todos os estilos anteriores, sem alterações) */
         :root { 
             --hw-orange: #ff9900; 
             --hw-purple: #2e0249; 
@@ -251,7 +252,7 @@
             </div>
             <div id="ranking-view" style="display:none;">
                 <h3 style="color:var(--hw-orange)">🏆 CLASSIFICAÇÃO GERAL 🏆</h3>
-                <table class="ranking-table" id="ranking-table"><tr>
+                <table class="ranking-table" id="ranking-table"><table>
                 <br>
                 <button class="btn" id="btn-return-to-menu" onclick="returnToMenu()">VOLTAR AO INÍCIO</button>
             </div>
@@ -391,12 +392,10 @@
                 nightModeCompleted = s.nightModeCompleted || false;
             } catch(e) {}
         }
-        // Atualiza conquistas baseadas em estatísticas
         const globalTotal = getGlobalTotalPoints();
         updateLendariaProgress(globalTotal);
         if (totalPlayedWithAudio >= 10) unlockAchievement('fa_audio', false);
         if (nightModeCompleted) unlockAchievement('noturna', false);
-        // Carrega progresso da varredeira
         const perfectTables = JSON.parse(localStorage.getItem('perfect_tables') || '[]');
         achievements.varredeira.progress = perfectTables.length;
         if (achievements.varredeira.progress >= achievements.varredeira.needed && !achievements.varredeira.unlocked)
@@ -687,7 +686,6 @@
             consecutiveHits = 0;
             if (lastErrorQuestionKey === q.key) {
                 errorCountForQuestion++;
-                if (errorCountForQuestion >= 2) { /* marca para resiliente no acerto futuro */ }
             } else {
                 lastErrorQuestionKey = q.key;
                 errorCountForQuestion = 1;
@@ -780,7 +778,6 @@
         saveStats();
         if (totalPlayedWithAudio >= 10) unlockAchievement('fa_audio');
         
-        // Não precisa mais atualizar lendária aqui, pois será atualizada ao salvar no ranking
         document.getElementById('modal-overlay').style.display = 'flex';
         document.getElementById('ranking-view').style.display = 'none';
         document.getElementById('highscore-input-area').style.display = 'block';
@@ -837,7 +834,6 @@
         if (ranking.length > 15) ranking = ranking.slice(0, 15);
         localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking));
         
-        // Atualiza conquista lendária baseada no total global
         const globalTotal = getGlobalTotalPoints();
         updateLendariaProgress(globalTotal);
         
@@ -851,7 +847,7 @@
         const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         const table = document.getElementById('ranking-table');
         table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
-        if (ranking.length === 0) table.innerHTML += `</table><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum feiticeiro ainda ✨</td></tr>`;
+        if (ranking.length === 0) table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum feiticeiro ainda ✨</td></tr>`;
         else ranking.forEach((r, i) => { table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td>${r.name}</td><td class="rank-score">${r.score}</td></tr>`; });
     }
 
@@ -861,22 +857,26 @@
         document.getElementById('stats-summary').style.display = 'none';
         document.getElementById('highscore-input-area').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'block';
+        document.getElementById('achievements-view').style.display = 'none';
+        document.getElementById('modal-title').innerText = "🏆 RANKING";
         renderTable();
     }
 
     function showAchievementsOnly() {
         document.getElementById('menu').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'flex';
+        // Esconde todas as outras seções e mostra apenas conquistas
         document.getElementById('stats-summary').style.display = 'none';
         document.getElementById('highscore-input-area').style.display = 'none';
         document.getElementById('ranking-view').style.display = 'none';
         document.getElementById('achievements-view').style.display = 'block';
+        document.getElementById('modal-title').innerText = "🏅 CONQUISTAS";
         renderAchievements();
     }
 
     function renderAchievements() {
         const table = document.getElementById('achievements-table');
-        table.innerHTML = `<tr><th>CONQUISTA</th><th>STATUS</th></tr>`;
+        table.innerHTML = `<table><th>CONQUISTA</th><th>STATUS</th></tr>`;
         for (let key in achievements) {
             const a = achievements[key];
             let statusText = a.unlocked ? '✅ DESBLOQUEADA' : '🔒 BLOQUEADA';
@@ -898,8 +898,10 @@
 
     function closeAchievements() {
         document.getElementById('achievements-view').style.display = 'none';
-        document.getElementById('menu').style.display = 'flex';
         document.getElementById('modal-overlay').style.display = 'none';
+        document.getElementById('menu').style.display = 'flex';
+        // Limpa o título do modal para o próximo uso
+        document.getElementById('modal-title').innerText = "Fim de Jogo";
     }
 
     function returnToMenu() {
