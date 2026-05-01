@@ -139,8 +139,8 @@
         .rank-score { color: var(--neon-green); text-align: right; font-weight: bold; }
         .achieve-unlocked { color: var(--neon-green); text-align: center; }
         .achieve-locked { color: #888; text-align: center; }
+        .achieve-progress { font-size: 1.4vh; color: #aaa; }
 
-        /* Notificação de conquista */
         .toast-notification {
             position: fixed;
             bottom: 20px;
@@ -271,7 +271,7 @@
     let achievements = {
         iniciante: { name: "🌟 Iniciante", desc: "Complete sua primeira partida", unlocked: false, date: null },
         perfeicao: { name: "🎯 Perfeição", desc: "Complete uma tabuada normal sem erros", unlocked: false, date: null },
-        varredeira: { name: "🧹 Varredeira", desc: "Acertar 10 questões seguidas", unlocked: false, date: null },
+        varredeira: { name: "🧹 Varredeira", desc: "Complete 5 tabuadas diferentes sem erros", unlocked: false, date: null, progress: 0, needed: 5 },
         relampago: { name: "⚡ Relâmpago", desc: "Responder 5 questões em menos de 3s cada (média)", unlocked: false, date: null },
         resiliente: { name: "💪 Resiliente", desc: "Errar a mesma questão 2 vezes e depois acertar", unlocked: false, date: null },
         mestre_supremo: { name: "🦉 Mestre Supremo", desc: "Completar a Jornada Mestre sem erros", unlocked: false, date: null },
@@ -291,6 +291,9 @@
                     if (achievements[key]) {
                         achievements[key].unlocked = parsed[key].unlocked;
                         achievements[key].date = parsed[key].date;
+                        if (key === 'varredeira' && parsed[key].progress !== undefined) {
+                            achievements[key].progress = parsed[key].progress;
+                        }
                     }
                 }
             } catch(e) {}
@@ -313,8 +316,23 @@
                     conquerSound.play().catch(e=>console.log("sem som de conquista"));
                 }
             }
-            // Verifica se desbloqueou todas para ativar Mestra Completa
             updateMasterComplete();
+        }
+    }
+
+    function updateVarredeiraProgress(modalidadeKey) {
+        if (achievements.varredeira.unlocked) return;
+        // Carrega lista de tabuadas perfeitas já conquistadas
+        let perfectTables = JSON.parse(localStorage.getItem('perfect_tables') || '[]');
+        if (!perfectTables.includes(modalidadeKey)) {
+            perfectTables.push(modalidadeKey);
+            localStorage.setItem('perfect_tables', JSON.stringify(perfectTables));
+        }
+        achievements.varredeira.progress = perfectTables.length;
+        if (achievements.varredeira.progress >= achievements.varredeira.needed) {
+            unlockAchievement('varredeira');
+        } else {
+            saveAchievements(); // salva progresso
         }
     }
 
@@ -347,16 +365,14 @@
         setTimeout(() => toast.remove(), 5000);
     }
 
-    // Variáveis globais de estatísticas para conquistas
-    let consecutiveHits = 0;          // acertos consecutivos
-    let questionTimes = [];            // tempos de cada questão (ms)
-    let lastErrorQuestionKey = null;   // chave da última questão errada
-    let errorCountForQuestion = 0;     // quantas vezes errou a mesma questão consecutivamente
-    let totalPlayedWithAudio = 0;      // contador de partidas com som ligado
-    let totalAccumulatedPoints = 0;    // pontos acumulados no ranking (para lendária)
-    let nightModeCompleted = false;    // se já completou uma partida no modo noturno
+    // Variáveis de estatísticas globais
+    let consecutiveHits = 0;
+    let lastErrorQuestionKey = null;
+    let errorCountForQuestion = 0;
+    let totalPlayedWithAudio = 0;
+    let totalAccumulatedPoints = 0;
+    let nightModeCompleted = false;
 
-    // Carregar estatísticas salvas
     function loadStats() {
         const stats = localStorage.getItem('bruxinha_stats');
         if (stats) {
@@ -367,10 +383,18 @@
                 nightModeCompleted = s.nightModeCompleted || false;
             } catch(e) {}
         }
-        // Atualiza conquistas que dependem de estatísticas já salvas
+        // Verifica conquistas baseadas em estatísticas já salvas
         if (totalAccumulatedPoints >= 50000) unlockAchievement('lendaria', false);
         if (totalPlayedWithAudio >= 10) unlockAchievement('fa_audio', false);
         if (nightModeCompleted) unlockAchievement('noturna', false);
+        // Carrega progresso da varredeira
+        const perfectTables = JSON.parse(localStorage.getItem('perfect_tables') || '[]');
+        achievements.varredeira.progress = perfectTables.length;
+        if (achievements.varredeira.progress >= achievements.varredeira.needed && !achievements.varredeira.unlocked) {
+            unlockAchievement('varredeira', false);
+        } else {
+            saveAchievements();
+        }
     }
     function saveStats() {
         localStorage.setItem('bruxinha_stats', JSON.stringify({
@@ -473,7 +497,6 @@
 
     function toggleNightMode() {
         document.body.classList.toggle('dark-mode');
-        // Se o jogador terminar uma partida no modo noturno, a conquista será verificada no finish
     }
 
     function toggleAudio() {
@@ -503,7 +526,8 @@
         finalCalculatedScore: 0,
         totalErrors: 0,
         questionStartTime: 0,
-        responseTimes: []      // tempos de resposta para conquista relâmpago
+        responseTimes: [],
+        currentModalidadeKey: ""  // para identificar a modalidade na varredeira
     };
 
     const VEL_H = 0.45, GRAVIDADE = 0.09, IMPULSO = 10, NUM_QUESTOES_MESTRE = 20;
@@ -541,11 +565,15 @@
         
         // Reset estatísticas de partida
         consecutiveHits = 0;
-        questionTimes = [];
         lastErrorQuestionKey = null;
         errorCountForQuestion = 0;
-        gameState.responseTimes = [];
-
+        
+        // Identificador único da modalidade (para varredeira)
+        let modalidadeKey = type;
+        if (type === 'mista1') modalidadeKey = 'mista_facil';
+        else if (type === 'mista2') modalidadeKey = 'mista_dificil';
+        else if (type !== 'master') modalidadeKey = `tabuada_${type}`;
+        
         gameState = {
             score: 0,
             questions: [],
@@ -562,7 +590,8 @@
             finalCalculatedScore: 0,
             totalErrors: 0,
             questionStartTime: Date.now(),
-            responseTimes: []
+            responseTimes: [],
+            currentModalidadeKey: modalidadeKey
         };
 
         let rawQuestions = [];
@@ -625,9 +654,7 @@
 
         if(parseInt(gameState.currentAnswer) === correct) {
             playRandomCorrectSound();
-            // Conquista: acertos consecutivos
             consecutiveHits++;
-            if (consecutiveHits >= 10) unlockAchievement('varredeira');
             
             let earnedPoints = false;
             if(!q.failed && !q.pointsEarned) {
@@ -637,12 +664,14 @@
                 q.pointsEarned = true;
                 earnedPoints = true;
             }
-            // Conquista resiliente: se esta questão já foi errada antes e agora acertou
+            // Resiliência: se essa questão já foi errada antes e agora acertou
             if (q.failed && !q.pointsEarned) {
-                // mas não pode ter ganho pontos antes; se acertou depois de errar, resiliente
-                unlockAchievement('resiliente');
+                // Mas pontos não ganhou porque já tinha falhado? O correto: resiliente deve ser desbloqueado mesmo sem pontos.
+                // Na verdade, se a questão foi marcada como failed e agora acertou (pela primeira vez após erro)
+                if (!q.pointsEarned) {
+                    unlockAchievement('resiliente');
+                }
             }
-            // Reset erro específico da questão
             if (lastErrorQuestionKey === q.key) errorCountForQuestion = 0;
             
             fb.innerText = earnedPoints ? `MUITO BEM! ✨ +${1 * gameState.multiplier}` : "CORRETO! (já aprendido, sem pontos)";
@@ -654,13 +683,13 @@
         } else {
             playRandomErrorSound();
             gameState.totalErrors++;
-            consecutiveHits = 0; // quebra sequência
-            // Controle de erros para a mesma questão (resiliente)
+            consecutiveHits = 0;
+            // Controle de erros consecutivos na mesma questão
             if (lastErrorQuestionKey === q.key) {
                 errorCountForQuestion++;
                 if (errorCountForQuestion >= 2) {
-                    // Sinaliza que se futuramente acertar, desbloqueia resiliente
-                    // Mas a conquista será desbloqueada no acerto posterior (acima)
+                    // Marca que se futuramente acertar, desbloqueia resiliente
+                    // Mas a condição de acerto já trata isso
                 }
             } else {
                 lastErrorQuestionKey = q.key;
@@ -718,6 +747,8 @@
             finalScore += perfectBonus;
             document.getElementById('perfect-badge').style.display = 'block';
             unlockAchievement('perfeicao');
+            // Para a conquista Varredeira: adiciona esta modalidade como perfeita
+            updateVarredeiraProgress(gameState.currentModalidadeKey);
         } else {
             document.getElementById('perfect-badge').style.display = 'none';
         }
@@ -733,17 +764,16 @@
 
         gameState.finalCalculatedScore = finalScore;
         
-        // Conquista iniciante (primeira partida completa com sucesso)
         if (success) unlockAchievement('iniciante');
         
-        // Conquista relâmpago: média das 5 primeiras respostas < 3000ms
+        // Conquista relâmpago
         let firstFive = gameState.responseTimes.slice(0,5);
         if (firstFive.length === 5) {
             let avg = firstFive.reduce((a,b)=>a+b,0)/5;
             if (avg < 3000) unlockAchievement('relampago');
         }
         
-        // Conquista noturna: se completou a partida no modo noturno
+        // Conquista noturna
         if (success && document.body.classList.contains('dark-mode')) {
             if (!nightModeCompleted) {
                 nightModeCompleted = true;
@@ -752,12 +782,14 @@
             }
         }
         
-        // Atualiza estatísticas de áudio
         if (audioEnabled) totalPlayedWithAudio++;
         saveStats();
         if (totalPlayedWithAudio >= 10) unlockAchievement('fa_audio');
         
-        // Atualiza pontos acumulados para conquista lendária (após salvar no ranking)
+        // Acumula pontos totais (mesmo antes de salvar no ranking) para desbloquear lendária
+        totalAccumulatedPoints += finalScore;
+        saveStats();
+        if (totalAccumulatedPoints >= 50000) unlockAchievement('lendaria');
         
         document.getElementById('modal-overlay').style.display = 'flex';
         document.getElementById('ranking-view').style.display = 'none';
@@ -815,9 +847,9 @@
         if (ranking.length > 15) ranking = ranking.slice(0, 15);
         localStorage.setItem('ranking_bruxinha_mestre', JSON.stringify(ranking));
         
-        // Atualiza pontos acumulados totais (para conquista lendária)
-        totalAccumulatedPoints += currentScore;
-        saveStats();
+        // Atualiza pontos acumulados (já foi feito em finish, mas garantimos)
+        // Nota: totalAccumulatedPoints já foi somado em finish, então não somar novamente.
+        // Apenas garantimos que a conquista seja verificada novamente
         if (totalAccumulatedPoints >= 50000) unlockAchievement('lendaria');
         
         document.getElementById('highscore-input-area').style.display = 'none';
@@ -858,9 +890,16 @@
         table.innerHTML = `<tr><th>CONQUISTA</th><th>STATUS</th></tr>`;
         for (let key in achievements) {
             const a = achievements[key];
-            const status = a.unlocked ? '✅ DESBLOQUEADA' : '🔒 BLOQUEADA';
+            let statusText = a.unlocked ? '✅ DESBLOQUEADA' : '🔒 BLOQUEADA';
+            let extra = '';
+            if (key === 'varredeira' && !a.unlocked) {
+                extra = `<div class="achieve-progress">Progresso: ${a.progress}/${a.needed} tabuadas perfeitas</div>`;
+            }
             const colorClass = a.unlocked ? 'achieve-unlocked' : 'achieve-locked';
-            table.innerHTML += `<tr><td class="achieve-name">${a.name}<br><span style="font-size:1.4vh;">${a.desc}</span></td><td class="${colorClass}">${status}</td></tr>`;
+            table.innerHTML += `<tr>
+                <td class="achieve-name">${a.name}<br><span style="font-size:1.4vh;">${a.desc}</span>${extra}</td>
+                <td class="${colorClass}">${statusText}</td>
+            </tr>`;
         }
     }
 
