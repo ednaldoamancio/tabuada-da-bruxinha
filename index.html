@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tabuada da Bruxinha - Ranking e Conquistas</title>
+    
+    <!-- Canvas Confetti para efeitos mágicos -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         :root { 
             --hw-orange: #ff9900; 
@@ -65,6 +69,43 @@
             transition: transform 0.2s; user-select: none;
         }
         .icon-btn:hover { transform: scale(1.1); background: var(--hw-orange); color: black; }
+
+        /* ===== BOTÃO DOURADO CINTILANTE ===== */
+        .btn-dourado {
+            background: linear-gradient(135deg, #f5b042, #ffd700, #f5a623);
+            border: 2px solid #fff2b5;
+            color: #3a2a1a;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            animation: brilhoDourado 1.5s ease-in-out infinite alternate;
+            text-shadow: 0 1px 2px rgba(255,255,200,0.5);
+        }
+
+        @keyframes brilhoDourado {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+                background: linear-gradient(135deg, #f5b042, #ffd700);
+            }
+            100% {
+                box-shadow: 0 0 25px rgba(255, 215, 0, 0.9), 0 0 8px rgba(255, 220, 100, 0.7);
+                background: linear-gradient(135deg, #ffcc44, #ffea8c);
+            }
+        }
+
+        .btn-dourado:hover {
+            transform: scale(1.1);
+            animation: none;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 1);
+            background: linear-gradient(135deg, #ffdd66, #ffea9e);
+        }
 
         .menu-box {
             background: rgba(46, 2, 73, 0.9);
@@ -198,6 +239,8 @@
     </video>
 
     <div class="top-bar">
+        <!-- BOTÃO DOURADO CINTILANTE - VOLTAR PARA LETRAMENTO VOGAIS -->
+        <div id="btn-voltar-dourado" class="btn-dourado" title="Voltar para Letramento Vogais">⬅️</div>
         <div id="btn-audio" class="icon-btn" onclick="toggleAudio()" title="Áudio">🔊</div>
         <div id="btn-full" class="icon-btn" onclick="toggleFullscreen()" title="Tela Cheia">⛶</div>
         <div id="btn-night" class="icon-btn" onclick="toggleNightMode()" title="Modo Noturno">🌙</div>
@@ -268,14 +311,14 @@
             </div>
             <div id="players-list-view" style="display:none;">
                 <h3 style="color:var(--hw-orange)">👥 ESCOLHA UM JOGADOR</h3>
-                <table class="players-table" id="players-table"></table>
+                <table class="players-table" id="players-table"><table>
                 <br>
                 <button class="btn" onclick="backToRanking()">VOLTAR AO RANKING</button>
                 <button class="btn" onclick="returnToMenu()">MENU PRINCIPAL</button>
             </div>
             <div id="achievements-view" style="display:none;">
                 <h3 id="achievements-player-name" style="color:var(--hw-orange)">🏅 CONQUISTAS</h3>
-                <table class="achievements-table" id="achievements-table"><table>
+                <table class="achievements-table" id="achievements-table"></table>
                 <br>
                 <button class="btn" onclick="showPlayerList()">◀ VOLTAR PARA JOGADORES</button>
             </div>
@@ -284,6 +327,37 @@
 </div>
 
 <script>
+    // ==================== BOTÃO DOURADO - VOLTAR PARA LETRAMENTO VOGAIS ====================
+    function voltarParaPaginaAnterior() {
+        // Efeito de confete dourado
+        if (typeof confetti !== 'undefined') {
+            confetti({ 
+                particleCount: 80, 
+                spread: 70, 
+                origin: { y: 0.3 }, 
+                colors: ['#ffd700', '#ffaa33', '#ffcc66'],
+                startVelocity: 10
+            });
+        }
+        
+        // URL CORRETA: Letramento Vogais
+        const urlDestino = 'https://letramento-vogais.vercel.app/';
+        
+        // Se estiver em modo fullscreen, propaga a flag
+        if (document.fullscreenElement) {
+            const separador = urlDestino.includes('?') ? '&' : '?';
+            const novaUrl = urlDestino + separador + 'fullscreen=force';
+            sessionStorage.setItem('parent_fullscreen_request', 'true');
+            window.location.href = novaUrl;
+        } else {
+            window.location.href = urlDestino;
+        }
+    }
+    
+    const btnVoltarDourado = document.getElementById('btn-voltar-dourado');
+    btnVoltarDourado.addEventListener('click', voltarParaPaginaAnterior);
+    btnVoltarDourado.addEventListener('touchstart', voltarParaPaginaAnterior, { passive: false });
+
     // ==================== CONQUISTAS POR JOGADOR ====================
     const defaultAchievements = {
         iniciante: { name: "🌟 Iniciante", desc: "Complete sua primeira partida", unlocked: false, date: null },
@@ -516,7 +590,6 @@
             showPlayerList();
         };
         loadGlobalStats();
-        // Verifica se há dados no localStorage
         const test = localStorage.getItem('ranking_bruxinha_mestre');
         console.log("Dados iniciais do ranking:", test);
     };
@@ -841,7 +914,7 @@
         const ranking = JSON.parse(localStorage.getItem('ranking_bruxinha_mestre') || "[]");
         const table = document.getElementById('ranking-table');
         if (!table) return;
-        table.innerHTML = `<table><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
+        table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
         if (ranking.length === 0) {
             table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Nenhum feiticeiro ainda ✨</td></tr>`;
         } else {
