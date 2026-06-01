@@ -13,8 +13,10 @@
     <meta name="apple-mobile-web-app-title" content="Bruxinha Tabuada">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAB5ElEQVRYR82WPUvDUBiGn5SWDg6dVDCgglBwkOKi4Cjg4CjiIuLgR/HjLziIs+AgTnESwV/QQTq56OIggkMHh1YsRZqmkBqFGiT2PZBiaZJzyZvfc56P95yLkH8ZHx+3MpmMlc/nP6rV6nsul/twHIeiKBBCiKjrOs3NzVkwDKPRaDQoFotOPB63giDgNE1rJkmSGY/Hfq1WYxiGKY7jVhRFrSzL+kEQeGmaMsMwLEmSXrIs+1EUhY1Gg+l0muG2LMv6QRB4lmUx3BZFUS+LItO2bYZLkqSXZVlGURQjpGmaXqFQYLggCEZRFDOTyTCi6zpTCILQmUwmjIgizXiel2EYRgRB0BkEQWc8HmeE4zhGQFmWGSHgoVIJRqMR0DQNhmGAx+OBUqmErVYLJpMJDMPAcrkEVVWhXC6DpmlwliQJbDYb1Ot1OBwOoGkaWCyWrRUKhfC+XC6h3+9Dv9+HbrcLp9MJer0etNttoCgKfD4f2O12MBgMEY1GA6rVKlxdXcH9/T1wHAdOp/MLlUolCIIAlmXh8fERWJYFjuPAcRwQQgjZbBaWy+UGy2azOQgCUBQFPp8PVqsVn+fzOQ/1eh3a7TZYlgVRFAFjDK7rwt/fH25vb+Hg4ACazSYsFgvYbre/CP/d/wF9xq8WqJhGSAAAAABJRU5ErkJggg==">
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAAAsTAAALEwEAmpwYAAABaWlDQ1BEaXNwbGF5IFAzAAB4nHWQvUvDUBTFT6tS0DqIDh0cMolD1NIKdnFoKxRFMFQFq1OafgltfCQpUnETVyn4H1jBWXCwiFRwcXAQRAcR3Zw6KbhoeN6XVNoi3sfl/Ticc7lcwBtQGSv2AijplpFMxKS1tLXp+QpOvBhAtCmZbVqWxeKR2Pr3+PRGgIq3KYO1tWvYOtNth7f9xT3nTzeFjtBg/LYyK0WTN4O4Nc0Wc6t4nLjFpQrHvS5XTfhk0uzqVybjZ4lQ5T6/7hWLxU4Dn1IqazWzaP4yRi2tYGuUjdzbyqoqKX9m6coULm+lllsGgxDteQRwgkQIzsCFFz6jCBOzj4SNBbrqYhniwOgFYVd1hQoFvsyB2jNUx04gMAhGTkR03pLFV+3N5bxUmjvnBYIX4/KfD4S9d6FrOJ/b8XxuaH83gLojYO3J83178D1bALpP/Lk3fqqeK0H/F+Cq8wXb9oUN/suuAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAD/AP8A/6C9p5MAAAAHdElNRQfoAxQPBynx7NdxAAAFAElEQVR42u2bX2hVZRjHf8/7O+fMnXM2j9Nl5kq31rrBaLhBSsvIwi6yKCgS+hMVERH0R0pUUCQeFEXgXRSLQqkoqCC6iIowhJqgQkmDpBZqkf0xd+6cM9/vvC/OO+7cnh13zjlz+z2wO+d8+3F+z/t7n+d93/d9nj9SMaZpYozBdV0cx8F13Z+klH9LKaWUj8hSSkopy6ZpmqSUyWQyKSmlTCQSyRBCGI/HY0mEkMYYE0opwwghjDGGGWMMI4QQxhhjQithjDGGhxgjhBDGGMMTQgRrY4wJIYQwYrGYCSGEMcYYHkIIY4wxjDGGhyGEMMYYY4wxjDHGGGMMI4QwxhjDQwghjDGGhxDCLBaLRgghjDHGGCGEMMYYHkIIY4wxjCGEMMYYY4wxjOEFjDHGGGMMY8RiMRNCCGOMMTyEEMYYYxhjjDGGhxBCmGVlZSaEEMYYYxghhDHGGMPwEkJYlmU2NDSYEUJYlmWGEcIYY4xheAkhhDG8hDHGMLyEEMIYY4zhJYwxxvASxhhjeAljjDE8hBHGGGNEAcYYI0RRCBFCiBKT/m/irz/PE5NVJMsqHpRUVVNjTzSzAeSMEWEZgQEQnT/LjdF/+fGrg2x55VVWrFz9qM8NQDgDyECwAPBjMRrq6slaGWYvXkyL7WYyqSu79/3OG4c20dDcjH0qhyyPs2pjFxtKdeiIIzAAlhYSLDNNpAB0Ktmw/mUyZZUsWLyY7mkB+u4M8/WRHxkfG6dzfTd7fzmKbVPMf2YxY6Nj2KkE1U1TQbNkKvx2UWRY8EAMCzSrlY++1kHtDDtRgElNo4EXX/R2wNvvvccnFavZtGsfSjwYAHImWk+DsCEKosAA7E4dAVprWmbbnrv21D9zy2T/WfLXP5Df9x0WjAa6CS/LSLtBcCj0MAkACyAIKARMC6UUECBo1sF27/B3gO1oZFmGkQz99X7rZqKNBEE0kKKFRh+ExrVcoE9NYQBU1VhU1VhU11osWNzE85tWU5bJxPMt5n96j8CAqJ5SFXyS//Pz8oMMAFMEigLqWx30bNlEkcQf+w9x/WZX5D+B5hmjKSkAkJXhP9wAQYhYWQHlU2ySLitH/d05BjNLKZttB+/H7Ckisv+DEhLJwAWpKZLGQN9qB93vnY+WbSGVhKbGZOQOSgMSlAlho6FLx4wxFBsBwoBsKsXkRx/iPLLogf8nAhgQTtBwQjBCgBaIDIhwAFpIUhKEF6AcB5QpyUCNIjnBwwEAYAxoKRBCIAiJ9BQGEAqkKZBKoxwHqU2wERJTQoVdUoIhI2gN0lHEAIxADg2StGdSMGmsL1SGwBSmQKNNQA5NwvBQtGb0r29ofWJRJB0HcJ0ADjTGGGOMKGI/PDjv/PPtV6jJVRNDZ2l91kH5mki6wUQSCu3jBABXXx+g//1hdDKD2mZAModq7sR46jD0jZB3A1CGCLrB4yIABthqJ5UswxrPIUeGkJksRrchTX2kiLpBOp1m+vTpTJo0CVmUKWKMQUrJpEmTaGhooLGxkXg8jmmapJNJampqmNKYoaamhng8XvCfaZqka1LU19YxdWoTNTU1JJNJiidVkpCIJxNUT2tA1dUWFIdrNAiNx/GorqqiJlN/l+s/6J+OkFKSSNQw/amFiHjFJ31s7cG1XazqKWgDTq6P0QudgblgAFonE04ayzSJxycoS+WIiYo1k6PvPQMAMBxFkVTMFVAAAABJRU5ErkJggg==">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -151,6 +153,7 @@
             background: var(--hw-orange); border: none; padding: 12px 30px; font-size: 2.2vh; 
             cursor: pointer; border-radius: 50px; margin: 8px; font-weight: bold; color: black; 
             box-shadow: 0 4px #cc7a00;
+            transition: transform 0.1s;
         }
         .btn:active { transform: scale(0.95); }
         
@@ -184,6 +187,22 @@
         .rank-pos { color: var(--hw-orange); font-weight: bold; }
         .rank-score { color: var(--neon-green); text-align: right; font-weight: bold; }
         
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-secondary {
+            background: #4b0082;
+            color: white;
+            box-shadow: 0 4px #2e0049;
+        }
+        
+        .btn-secondary:active { transform: scale(0.95); }
+        
         #install-prompt {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(135deg, #2e0249, #4b0082);
@@ -192,6 +211,13 @@
             backdrop-filter: blur(10px); cursor: pointer;
         }
         .hidden { display: none !important; }
+        
+        .result-box {
+            background: rgba(0,0,0,0.7);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -217,7 +243,7 @@
                 <label><input type="radio" name="ordem" value="seq" checked> Sequencial</label>
                 <label style="margin-left:15px;"><input type="radio" name="ordem" value="rand"> Aleatória</label>
             </div>
-            <button class="btn" id="btn-start">INICIAR</button>
+            <button class="btn" id="btn-start">🚀 INICIAR</button>
             <button class="btn" id="btn-ranking" style="background:#4b0082; color:white;">🏆 RANKING</button>
         </div>
     </div>
@@ -247,23 +273,32 @@
         <img id="witch" src="bruxinha.gif" alt="Bruxinha">
     </div>
 
-    <!-- MODAL RANKING -->
+    <!-- MODAL RESULTADO / RANKING -->
     <div id="modal-overlay" class="screen" style="display:none; background: rgba(0,0,0,0.95); z-index: 50;">
-        <div class="menu-box">
-            <h2 id="modal-title" style="font-size: 4vh;">🏆 RANKING</h2>
-            <div id="stats-summary" style="display:none;">
-                <p id="modal-details"></p>
-                <div id="bonus-badge" style="display:none;">✨ BÓNUS MESTRE +5000 ✨</div>
-                <div id="perfect-badge" style="display:none;">🎯 PERFEIÇÃO +1000 🎯</div>
+        <div class="menu-box" style="max-width: 90%; max-height: 90%; overflow-y: auto;">
+            <h2 id="modal-title" style="font-size: 4vh;">🎮 Fim de Jogo</h2>
+            
+            <div id="result-area" class="result-box">
+                <p id="modal-details" style="font-size: 2.5vh; margin: 10px 0;"></p>
+                <div id="bonus-badge" style="display:none; background: var(--neon-green); color: black; padding: 10px; border-radius: 10px; margin: 10px;">✨ BÓNUS MESTRE +5000 ✨</div>
+                <div id="perfect-badge" style="display:none; background: #ffaa00; color: black; padding: 10px; border-radius: 10px; margin: 10px;">🎯 PERFEIÇÃO +1000 🎯</div>
             </div>
-            <div id="highscore-area" style="display:none;">
-                <p>Nome: <strong id="current-player-name-display"></strong></p>
-                <button class="btn" id="save-score-btn">SALVAR RANKING</button>
+            
+            <div id="save-area" style="display:none;">
+                <p style="font-size: 2vh;">Jogador: <strong id="current-player-name-display"></strong></p>
+                <div class="btn-group">
+                    <button class="btn" id="save-score-btn">💾 SALVAR PONTUAÇÃO</button>
+                    <button class="btn btn-secondary" id="skip-save-btn">🔄 JOGAR NOVAMENTE</button>
+                </div>
             </div>
-            <div id="ranking-area">
-                <table class="ranking-table" id="ranking-table"></table>
-                <br>
-                <button class="btn" id="btn-back-menu">MENU PRINCIPAL</button>
+            
+            <div id="ranking-area" style="display:none;">
+                <h3 style="color:var(--hw-orange);">🏆 CLASSIFICAÇÃO</h3>
+                <table class="ranking-table" id="ranking-table"><table>
+                <div class="btn-group" style="margin-top: 20px;">
+                    <button class="btn" id="btn-new-game">🔄 NOVA PARTIDA</button>
+                    <button class="btn btn-secondary" id="btn-back-menu">🏠 MENU</button>
+                </div>
             </div>
         </div>
     </div>
@@ -297,6 +332,7 @@
     let bgMusic, sfxWin, sfxLose, sfxCrash, correctSounds, errorSounds;
     let witchY = 60, witchX = 10, witchDir = 1, physicsLoop = null;
     let finalScore = 0;
+    let currentGameResult = { score: 0, perfect: false, master: false, totalErrors: 0 };
 
     // ==================== ÁUDIO ====================
     function initAudio() {
@@ -323,8 +359,8 @@
     function toggleAudio() {
         audioEnabled = !audioEnabled;
         document.getElementById('btn-audio').innerText = audioEnabled ? "🔊" : "🔇";
-        if(audioEnabled && gameActive) bgMusic.play().catch(e=>{});
-        else bgMusic.pause();
+        if(audioEnabled && gameActive && bgMusic) bgMusic.play().catch(e=>{});
+        else if(bgMusic) bgMusic.pause();
     }
 
     // ==================== RANKING ====================
@@ -346,9 +382,9 @@
         const ranking = getRanking();
         const table = document.getElementById('ranking-table');
         if (!table) return;
-        table.innerHTML = `<tr><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
+        table.innerHTML = `<table><th>#</th><th>NOME</th><th>PONTOS</th></tr>`;
         if (ranking.length === 0) {
-            table.innerHTML += `<tr><td colspan="3" style="text-align:center;">✨ Sem jogadores ✨</td></tr>`;
+            table.innerHTML += `<tr><td colspan="3" style="text-align:center; padding:20px;">✨ Sem jogadores ainda ✨</td></tr>`;
         } else {
             ranking.forEach((r, i) => {
                 table.innerHTML += `<tr><td class="rank-pos">${i+1}º</td><td>${r.name}</td><td class="rank-score">${r.score}</td></tr>`;
@@ -360,10 +396,10 @@
         document.getElementById('menu').style.display = 'none';
         document.getElementById('game-container').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'flex';
-        document.getElementById('stats-summary').style.display = 'none';
-        document.getElementById('highscore-area').style.display = 'none';
+        document.getElementById('result-area').style.display = 'none';
+        document.getElementById('save-area').style.display = 'none';
         document.getElementById('ranking-area').style.display = 'block';
-        document.getElementById('modal-title').innerText = "🏆 RANKING";
+        document.getElementById('modal-title').innerHTML = "🏆 RANKING";
         renderRanking();
     }
 
@@ -403,11 +439,12 @@
         witchY = 60; witchX = 10; witchDir = 1;
         
         document.getElementById('witch').src = "bruxinha.gif";
+        document.getElementById('witch').style.transform = "scaleX(1)";
         document.getElementById('menu').style.display = 'none';
         document.getElementById('game-container').style.display = 'flex';
         document.getElementById('display-score').innerText = "0";
         
-        if(audioEnabled) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); }
+        if(audioEnabled && bgMusic) { bgMusic.currentTime = 0; bgMusic.play().catch(e=>{}); }
         
         startPhysics();
         showQuestion();
@@ -456,8 +493,6 @@
         if(!gameData.canAttempt || gameData.currentAnswer === "") return;
         const q = gameData.questions[gameData.currentIndex];
         const correct = q.n1 * q.n2;
-        const timeSpent = Date.now() - gameData.questionStartTime;
-        gameData.responseTimes.push(timeSpent);
         
         if(parseInt(gameData.currentAnswer) === correct) {
             playRandomCorrectSound();
@@ -468,7 +503,7 @@
                 q.pointsEarned = true;
                 document.getElementById('feedback').innerHTML = `MUITO BEM! ✨ +${gain}`;
             } else {
-                document.getElementById('feedback').innerHTML = "CORRETO! (já pontuado)";
+                document.getElementById('feedback').innerHTML = "CORRETO!";
             }
             document.getElementById('feedback').style.color = "var(--neon-green)";
             witchY = Math.min(witchY + 10, 80);
@@ -498,29 +533,30 @@
     function startPhysics() {
         if(physicsLoop) clearInterval(physicsLoop);
         physicsLoop = setInterval(() => {
-            if(!gameActive) { clearInterval(physicsLoop); return; }
+            if(!gameActive) return;
             witchX += (0.45 * witchDir);
             if(witchX > 85) { witchDir = -1; document.getElementById('witch').style.transform = "scaleX(-1)"; }
             else if (witchX < 5) { witchDir = 1; document.getElementById('witch').style.transform = "scaleX(1)"; }
             witchY -= 0.09;
             document.getElementById('witch').style.left = witchX + "%";
             document.getElementById('witch').style.bottom = witchY + "%";
-            if(witchY < 5) { gameActive = false; handleCrash(); }
+            if(witchY < 5 && gameActive) { gameActive = false; handleCrash(); }
         }, 30);
     }
     
     function handleCrash() {
         if(physicsLoop) clearInterval(physicsLoop);
-        bgMusic.pause();
+        if(bgMusic) bgMusic.pause();
         if(audioEnabled) sfxCrash.play().catch(e=>{});
         document.getElementById('witch').src = "bruxinha-caindo.gif";
-        document.getElementById('feedback').innerHTML = "A bruxinha caiu!";
-        setTimeout(() => finish(false), 2000);
+        document.getElementById('feedback').innerHTML = "💥 A bruxinha caiu! 💥";
+        setTimeout(() => finish(false), 1500);
     }
     
     function finish(success) {
         gameActive = false;
         if(physicsLoop) clearInterval(physicsLoop);
+        
         let perfectBonus = 0, masterBonus = 0;
         
         if(success && gameData.totalErrors === 0 && !gameData.isJornadaMaster) {
@@ -533,37 +569,53 @@
             confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#ffd700', '#ff9900'] });
         }
         
+        if(!success && audioEnabled) sfxLose.play().catch(e=>{});
+        
         finalScore = gameData.score + perfectBonus + masterBonus;
+        currentGameResult = {
+            score: gameData.score,
+            perfect: perfectBonus > 0,
+            master: masterBonus > 0,
+            totalErrors: gameData.totalErrors,
+            finalScore: finalScore
+        };
         
         document.getElementById('menu').style.display = 'none';
         document.getElementById('game-container').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'flex';
-        document.getElementById('stats-summary').style.display = 'block';
-        document.getElementById('highscore-area').style.display = 'block';
+        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('save-area').style.display = 'block';
         document.getElementById('ranking-area').style.display = 'none';
         
         document.getElementById('perfect-badge').style.display = perfectBonus > 0 ? 'block' : 'none';
         document.getElementById('bonus-badge').style.display = masterBonus > 0 ? 'block' : 'none';
         document.getElementById('current-player-name-display').innerHTML = currentPlayer;
         
-        let summary = `Pontuação: ${gameData.score}<br>`;
+        let summary = `📊 Pontuação Base: ${gameData.score}<br>`;
         if(perfectBonus > 0) summary += `🎯 Bônus Perfeição: +${perfectBonus}<br>`;
         if(masterBonus > 0) summary += `✨ Bônus Mestre: +${masterBonus}<br>`;
-        summary += `<strong style="font-size:3vh;">Total: ${finalScore}</strong><br>`;
-        summary += `Erros: ${gameData.totalErrors}`;
+        summary += `<strong style="font-size:3vh;">🏆 TOTAL: ${finalScore}</strong><br>`;
+        summary += `❌ Erros: ${gameData.totalErrors}`;
         document.getElementById('modal-details').innerHTML = summary;
-        document.getElementById('modal-title').innerHTML = success ? "🎉 VITÓRIA! 🎉" : "💀 GAME OVER 💀";
         
-        if(!success && audioEnabled) sfxLose.play().catch(e=>{});
+        let titleMsg = success ? "🎉 VITÓRIA! 🎉" : "💀 GAME OVER 💀";
+        if(masterBonus > 0) titleMsg = "🏆 MESTRE SUPREMO! 🏆";
+        document.getElementById('modal-title').innerHTML = titleMsg;
     }
     
     function saveCurrentScore() {
         saveRanking(finalScore);
-        document.getElementById('stats-summary').style.display = 'none';
-        document.getElementById('highscore-area').style.display = 'none';
+        document.getElementById('result-area').style.display = 'none';
+        document.getElementById('save-area').style.display = 'none';
         document.getElementById('ranking-area').style.display = 'block';
         document.getElementById('modal-title').innerHTML = "🏆 RANKING";
         renderRanking();
+    }
+    
+    function startNewGame() {
+        if(bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
+        document.getElementById('modal-overlay').style.display = 'none';
+        startGame();
     }
     
     function returnToMenu() {
@@ -573,7 +625,7 @@
         document.getElementById('modal-overlay').style.display = 'none';
         document.getElementById('menu').style.display = 'flex';
         document.getElementById('game-container').style.display = 'none';
-        document.getElementById('player-name-input').value = currentPlayer;
+        if(currentPlayer) document.getElementById('player-name-input').value = currentPlayer;
     }
     
     function toggleFullscreen() {
@@ -609,7 +661,9 @@
         
         document.getElementById('btn-ranking').onclick = () => showRanking();
         document.getElementById('btn-back-menu').onclick = () => returnToMenu();
+        document.getElementById('btn-new-game').onclick = () => startNewGame();
         document.getElementById('save-score-btn').onclick = () => saveCurrentScore();
+        document.getElementById('skip-save-btn').onclick = () => startNewGame();
         document.getElementById('btn-voltar-dourado').onclick = () => voltarPagina();
         
         // Teclado numérico
