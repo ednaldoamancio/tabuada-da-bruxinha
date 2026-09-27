@@ -340,7 +340,7 @@
         const radioOrdem = document.querySelector(`input[name="ordem"][value="${lastOrdem}"]`);
         if (radioOrdem) radioOrdem.checked = true;
 
-        // Próxima tabuada
+        // Tabuada salva
         const lastTabuada = localStorage.getItem('last_tabuada_bruxinha') || "1";
         document.getElementById('tabuada-select').value = lastTabuada;
     }
@@ -492,6 +492,23 @@
         } else {
             playRandomErrorSound();
             gameData.totalErrors++;
+            
+            // Adiciona 3 repetições da multiplicação errada para aparecerem aleatoriamente no final
+            const retryQuestions = [
+                { n1: q.n1, n2: q.n2, pointsEarned: false },
+                { n1: q.n1, n2: q.n2, pointsEarned: false },
+                { n1: q.n1, n2: q.n2, pointsEarned: false }
+            ];
+            gameData.questions.push(...retryQuestions);
+            
+            // Embaralha as questões restantes no final da fila
+            const remaining = gameData.questions.slice(gameData.currentIndex + 1);
+            for (let i = remaining.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+            }
+            gameData.questions.splice(gameData.currentIndex + 1, remaining.length, ...remaining);
+
             document.getElementById('feedback').innerHTML = `OPS! ${q.n1} x ${q.n2} = ${correct}`;
             document.getElementById('feedback').style.color = "var(--neon-red)";
             const display = document.getElementById('answer-display');
@@ -554,12 +571,18 @@
         // 1. Salvar pontuação automaticamente
         saveRanking(finalScore);
 
-        // 2. Sequência automática para a próxima tabuada
+        // 2. Definir próxima tabuada:
+        // Apenas avança se o jogador NÃO tiver nenhum erro e tiver concluído com sucesso.
+        // Se cometeu erro, permanece na mesma tabuada para refazê-la.
         const currentTabuada = document.getElementById('tabuada-select').value;
-        const currentIdx = opcoesTabuadas.findIndex(opt => opt.value === currentTabuada);
-        if (currentIdx !== -1) {
-            const nextIdx = (currentIdx + 1) % opcoesTabuadas.length;
-            localStorage.setItem('last_tabuada_bruxinha', opcoesTabuadas[nextIdx].value);
+        if (success && gameData.totalErrors === 0) {
+            const currentIdx = opcoesTabuadas.findIndex(opt => opt.value === currentTabuada);
+            if (currentIdx !== -1) {
+                const nextIdx = (currentIdx + 1) % opcoesTabuadas.length;
+                localStorage.setItem('last_tabuada_bruxinha', opcoesTabuadas[nextIdx].value);
+            }
+        } else {
+            localStorage.setItem('last_tabuada_bruxinha', currentTabuada);
         }
 
         // 3. Direcionar diretamente para a tela de Ranking
@@ -574,7 +597,7 @@
         document.getElementById('menu').style.display = 'flex';
         document.getElementById('game-container').style.display = 'none';
         
-        // Recarrega nome, modo e seleciona a próxima tabuada automaticamente
+        // Recarrega preferências salvas (nome, ordem e a tabuada correta)
         loadSavedPreferences();
     }
     
