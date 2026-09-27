@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bruxinha Tabuada">
     
-    <!-- Favicon e Ícones de Atalho (Reforçados) -->
+    <!-- Favicon e Ícones de Atalho -->
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
@@ -197,14 +197,6 @@
             flex-wrap: wrap;
         }
         
-        .btn-secondary {
-            background: #4b0082;
-            color: white;
-            box-shadow: 0 4px #2e0049;
-        }
-        
-        .btn-secondary:active { transform: scale(0.95); }
-        
         #install-prompt {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(135deg, #2e0249, #4b0082);
@@ -213,13 +205,6 @@
             backdrop-filter: blur(10px); cursor: pointer;
         }
         .hidden { display: none !important; }
-        
-        .result-box {
-            background: rgba(0,0,0,0.7);
-            border-radius: 15px;
-            padding: 15px;
-            margin: 15px 0;
-        }
     </style>
 </head>
 <body>
@@ -235,7 +220,7 @@
         <div id="btn-full" class="icon-btn" onclick="toggleFullscreen()">⛶</div>
     </div>
 
-    <!-- TELA DE MENU -->
+    <!-- TELA DE MENU INICIAL -->
     <div id="menu" class="screen">
         <div class="menu-box">
             <h1 style="color:var(--hw-orange); margin:0; font-size: 4vh;">🎃 Tabuada da Bruxinha 🎃</h1>
@@ -275,32 +260,13 @@
         <img id="witch" src="bruxinha.gif" alt="Bruxinha">
     </div>
 
-    <!-- MODAL RESULTADO / RANKING -->
+    <!-- TELA DE RANKING -->
     <div id="modal-overlay" class="screen" style="display:none; background: rgba(0,0,0,0.95); z-index: 50;">
         <div class="menu-box" style="max-width: 90%; max-height: 90%; overflow-y: auto;">
-            <h2 id="modal-title" style="font-size: 4vh;">🎮 Fim de Jogo</h2>
-            
-            <div id="result-area" class="result-box">
-                <p id="modal-details" style="font-size: 2.5vh; margin: 10px 0;"></p>
-                <div id="bonus-badge" style="display:none; background: var(--neon-green); color: black; padding: 10px; border-radius: 10px; margin: 10px;">✨ BÓNUS MESTRE +5000 ✨</div>
-                <div id="perfect-badge" style="display:none; background: #ffaa00; color: black; padding: 10px; border-radius: 10px; margin: 10px;">🎯 PERFEIÇÃO +1000 🎯</div>
-            </div>
-            
-            <div id="save-area" style="display:none;">
-                <p style="font-size: 2vh;">Jogador: <strong id="current-player-name-display"></strong></p>
-                <div class="btn-group">
-                    <button class="btn" id="save-score-btn">💾 SALVAR PONTUAÇÃO</button>
-                    <button class="btn btn-secondary" id="skip-save-btn">🔄 JOGAR NOVAMENTE</button>
-                </div>
-            </div>
-            
-            <div id="ranking-area" style="display:none;">
-                <h3 style="color:var(--hw-orange);">🏆 CLASSIFICAÇÃO</h3>
-                <table class="ranking-table" id="ranking-table"></table>
-                <div class="btn-group" style="margin-top: 20px;">
-                    <button class="btn" id="btn-new-game">🔄 NOVA PARTIDA</button>
-                    <button class="btn btn-secondary" id="btn-back-menu">🏠 MENU</button>
-                </div>
+            <h2 style="color:var(--hw-orange); font-size: 4vh; margin:0;">🏆 CLASSIFICAÇÃO</h2>
+            <table class="ranking-table" id="ranking-table"></table>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button class="btn" id="btn-new-game">🔄 NOVA PARTIDA</button>
             </div>
         </div>
     </div>
@@ -328,13 +294,11 @@
     let gameData = {
         score: 0, questions: [], currentIndex: 0, multiplier: 1,
         isJornadaMaster: false, totalErrors: 0, currentAnswer: "",
-        canAttempt: true, questionStartTime: 0, responseTimes: []
+        canAttempt: true
     };
     
     let bgMusic, sfxWin, sfxLose, sfxCrash, correctSounds, errorSounds;
     let witchY = 60, witchX = 10, witchDir = 1, physicsLoop = null;
-    let finalScore = 0;
-    let currentGameResult = { score: 0, perfect: false, master: false, totalErrors: 0 };
 
     // ==================== ÁUDIO ====================
     function initAudio() {
@@ -363,6 +327,22 @@
         document.getElementById('btn-audio').innerText = audioEnabled ? "🔊" : "🔇";
         if(audioEnabled && gameActive && bgMusic) bgMusic.play().catch(e=>{});
         else if(bgMusic) bgMusic.pause();
+    }
+
+    // ==================== CARREGAR PREFERÊNCIAS ====================
+    function loadSavedPreferences() {
+        // Nome do último jogador
+        const lastPlayer = localStorage.getItem('last_player_bruxinha') || "";
+        document.getElementById('player-name-input').value = lastPlayer;
+
+        // Modo da ordem (seq / rand)
+        const lastOrdem = localStorage.getItem('last_ordem_bruxinha') || "seq";
+        const radioOrdem = document.querySelector(`input[name="ordem"][value="${lastOrdem}"]`);
+        if (radioOrdem) radioOrdem.checked = true;
+
+        // Próxima tabuada
+        const lastTabuada = localStorage.getItem('last_tabuada_bruxinha') || "1";
+        document.getElementById('tabuada-select').value = lastTabuada;
     }
 
     // ==================== RANKING ====================
@@ -398,10 +378,6 @@
         document.getElementById('menu').style.display = 'none';
         document.getElementById('game-container').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'flex';
-        document.getElementById('result-area').style.display = 'none';
-        document.getElementById('save-area').style.display = 'none';
-        document.getElementById('ranking-area').style.display = 'block';
-        document.getElementById('modal-title').innerHTML = "🏆 RANKING";
         renderRanking();
     }
 
@@ -410,12 +386,15 @@
         const type = document.getElementById('tabuada-select').value;
         const isSeq = document.querySelector('input[name="ordem"]:checked').value === 'seq';
         
+        // Salva nome e preferência de ordem
+        localStorage.setItem('last_player_bruxinha', currentPlayer);
+        localStorage.setItem('last_ordem_bruxinha', isSeq ? 'seq' : 'rand');
+
         gameData = {
             score: 0, questions: [], currentIndex: 0,
             multiplier: type === 'master' ? 15 : (type === 'mista2' ? 8 : (type === 'mista1' ? 2 : parseInt(type))),
             isJornadaMaster: type === 'master',
-            totalErrors: 0, currentAnswer: "", canAttempt: true,
-            questionStartTime: 0, responseTimes: []
+            totalErrors: 0, currentAnswer: "", canAttempt: true
         };
         
         let rawQuestions = [];
@@ -437,7 +416,6 @@
         
         gameData.questions = rawQuestions;
         gameActive = true;
-        finalScore = 0;
         witchY = 60; witchX = 10; witchDir = 1;
         
         document.getElementById('witch').src = "bruxinha.gif";
@@ -462,7 +440,6 @@
         document.getElementById('feedback').innerHTML = "";
         gameData.currentAnswer = "";
         gameData.canAttempt = true;
-        gameData.questionStartTime = Date.now();
     }
     
     function handleNumpad(val) {
@@ -570,54 +547,23 @@
             if(audioEnabled) sfxWin.play().catch(e=>{});
             confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#ffd700', '#ff9900'] });
         }
-        
         if(!success && audioEnabled) sfxLose.play().catch(e=>{});
         
-        finalScore = gameData.score + perfectBonus + masterBonus;
-        currentGameResult = {
-            score: gameData.score,
-            perfect: perfectBonus > 0,
-            master: masterBonus > 0,
-            totalErrors: gameData.totalErrors,
-            finalScore: finalScore
-        };
+        let finalScore = gameData.score + perfectBonus + masterBonus;
         
-        document.getElementById('menu').style.display = 'none';
-        document.getElementById('game-container').style.display = 'none';
-        document.getElementById('modal-overlay').style.display = 'flex';
-        document.getElementById('result-area').style.display = 'block';
-        document.getElementById('save-area').style.display = 'block';
-        document.getElementById('ranking-area').style.display = 'none';
-        
-        document.getElementById('perfect-badge').style.display = perfectBonus > 0 ? 'block' : 'none';
-        document.getElementById('bonus-badge').style.display = masterBonus > 0 ? 'block' : 'none';
-        document.getElementById('current-player-name-display').innerHTML = currentPlayer;
-        
-        let summary = `📊 Pontuação Base: ${gameData.score}<br>`;
-        if(perfectBonus > 0) summary += `🎯 Bônus Perfeição: +${perfectBonus}<br>`;
-        if(masterBonus > 0) summary += `✨ Bônus Mestre: +${masterBonus}<br>`;
-        summary += `<strong style="font-size:3vh;">🏆 TOTAL: ${finalScore}</strong><br>`;
-        summary += `❌ Erros: ${gameData.totalErrors}`;
-        document.getElementById('modal-details').innerHTML = summary;
-        
-        let titleMsg = success ? "🎉 VITÓRIA! 🎉" : "💀 GAME OVER 💀";
-        if(masterBonus > 0) titleMsg = "🏆 MESTRE SUPREMO! 🏆";
-        document.getElementById('modal-title').innerHTML = titleMsg;
-    }
-    
-    function saveCurrentScore() {
+        // 1. Salvar pontuação automaticamente
         saveRanking(finalScore);
-        document.getElementById('result-area').style.display = 'none';
-        document.getElementById('save-area').style.display = 'none';
-        document.getElementById('ranking-area').style.display = 'block';
-        document.getElementById('modal-title').innerHTML = "🏆 RANKING";
-        renderRanking();
-    }
-    
-    function startNewGame() {
-        if(bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
-        document.getElementById('modal-overlay').style.display = 'none';
-        startGame();
+
+        // 2. Sequência automática para a próxima tabuada
+        const currentTabuada = document.getElementById('tabuada-select').value;
+        const currentIdx = opcoesTabuadas.findIndex(opt => opt.value === currentTabuada);
+        if (currentIdx !== -1) {
+            const nextIdx = (currentIdx + 1) % opcoesTabuadas.length;
+            localStorage.setItem('last_tabuada_bruxinha', opcoesTabuadas[nextIdx].value);
+        }
+
+        // 3. Direcionar diretamente para a tela de Ranking
+        showRanking();
     }
     
     function returnToMenu() {
@@ -627,7 +573,9 @@
         document.getElementById('modal-overlay').style.display = 'none';
         document.getElementById('menu').style.display = 'flex';
         document.getElementById('game-container').style.display = 'none';
-        if(currentPlayer) document.getElementById('player-name-input').value = currentPlayer;
+        
+        // Recarrega nome, modo e seleciona a próxima tabuada automaticamente
+        loadSavedPreferences();
     }
     
     function toggleFullscreen() {
@@ -644,7 +592,7 @@
     window.onload = () => {
         initAudio();
         
-        // Popular select
+        // Popular select de tabuadas
         const select = document.getElementById('tabuada-select');
         opcoesTabuadas.forEach(opt => {
             let option = document.createElement('option');
@@ -652,6 +600,9 @@
             option.textContent = opt.label;
             select.appendChild(option);
         });
+
+        // Carregar preferências salvas do jogador
+        loadSavedPreferences();
         
         // Eventos dos botões
         document.getElementById('btn-start').onclick = () => {
@@ -662,13 +613,10 @@
         };
         
         document.getElementById('btn-ranking').onclick = () => showRanking();
-        document.getElementById('btn-back-menu').onclick = () => returnToMenu();
-        document.getElementById('btn-new-game').onclick = () => startNewGame();
-        document.getElementById('save-score-btn').onclick = () => saveCurrentScore();
-        document.getElementById('skip-save-btn').onclick = () => startNewGame();
+        document.getElementById('btn-new-game').onclick = () => returnToMenu();
         document.getElementById('btn-voltar-dourado').onclick = () => voltarPagina();
         
-        // Teclado numérico
+        // Teclado numérico na tela
         document.querySelectorAll('.num-key').forEach(btn => {
             btn.onclick = () => handleNumpad(btn.getAttribute('data-num'));
         });
